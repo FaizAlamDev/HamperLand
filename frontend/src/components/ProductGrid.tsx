@@ -1,11 +1,5 @@
 import ProductCard from '@/components/ProductCard'
-
-type Product = {
-  _id: string
-  name: string
-  image: string
-  price: number
-}
+import type { Product } from '@/types'
 
 export default function ProductsGrid({ products }: { products: Product[] }) {
   return (

@@ -22,10 +22,13 @@ export default function Header() {
           <span>About</span>
         </Link>
 
-        <button className="flex items-center space-x-1 hover:text-gray-700 text-gray-600">
+        <Link
+          to="/cart"
+          className="flex items-center space-x-1 hover:text-gray-700 text-gray-600"
+        >
           <ShoppingCart size={20} />
           <span>Cart</span>
-        </button>
+        </Link>
       </div>
     </header>
   )
