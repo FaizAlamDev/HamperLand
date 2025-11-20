@@ -9,18 +9,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import mockProducts from '@/mock/mockProducts.json'
 import type { Product } from '@/types'
 import useCartStore from '@/store/useCartStore'
-
-const mockProduct: Product = {
-  _id: '1',
-  name: 'Decorative Candle Set',
-  image: 'https://picsum.photos/seed/decor/800/600',
-  price: 499,
-  description:
-    'A beautiful handcrafted candle set perfect for home decor or gifting.',
-  countInStock: 8,
-}
 
 export const Route = createFileRoute('/product/$id')({
   component: ProductScreen,
@@ -29,7 +20,10 @@ export const Route = createFileRoute('/product/$id')({
 function ProductScreen() {
   const [qty, setQty] = useState('1')
 
-  const product = mockProduct
+  const productMap = Object.fromEntries(mockProducts.map((p) => [p._id, p]))
+
+  const { id } = Route.useParams()
+  const product: Product = productMap[id]
 
   const addItem = useCartStore((state) => state.addItem)
   const navigate = useNavigate()
