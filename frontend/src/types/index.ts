@@ -15,7 +15,6 @@ export type CartState = {
   removeItem: (id: string) => void
   updateQty: (id: string, qty: number) => void
   clearCart: () => void
-  // helpers
   getTotalItems: () => number
   getTotalPrice: () => number
 }
@@ -59,3 +58,8 @@ export const INDIAN_STATES = [
 ] as const
 
 export type IndianState = (typeof INDIAN_STATES)[number]
+
+export type FormError = {
+  id: number
+  message: string
+}

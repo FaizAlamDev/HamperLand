@@ -35,11 +35,11 @@ function ProductScreen() {
       </Link>
 
       <div className="mt-8 grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-1">
+        <div className="w-full aspect-square overflow-hidden rounded-lg shadow-sm">
           <img
             src={product.image}
             alt={product.name}
-            className="rounded-lg w-full object-cover shadow-sm"
+            className="h-full w-full object-cover"
           />
         </div>
 

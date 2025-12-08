@@ -2,7 +2,7 @@
   {
     "_id": "1",
     "name": "Festive Hamper Mini",
-    "image": "https://picsum.photos/seed/hamper1/600/400",
+    "image": "https://hamperland-item-images.s3.ap-southeast-2.amazonaws.com/item_1.jpeg",
     "price": 799,
     "description": "Festive Hamper Mini",
     "countInStock": 10
@@ -10,7 +10,7 @@
   {
     "_id": "2",
     "name": "Decor Candle Set",
-    "image": "https://picsum.photos/seed/decor1/600/400",
+    "image": "https://hamperland-item-images.s3.ap-southeast-2.amazonaws.com/item_2.jpeg",
     "price": 499,
     "description": "Decor Candle Set",
     "countInStock": 10
@@ -18,7 +18,7 @@
   {
     "_id": "3",
     "name": "Wall Art (Framed)",
-    "image": "https://picsum.photos/seed/art1/600/400",
+    "image": "https://hamperland-item-images.s3.ap-southeast-2.amazonaws.com/item_3.jpeg",
     "price": 1199,
     "description": "Wall Art (Framed)",
     "countInStock": 3
@@ -26,7 +26,7 @@
   {
     "_id": "4",
     "name": "Planter Duo",
-    "image": "https://picsum.photos/seed/planter/600/400",
+    "image": "https://hamperland-item-images.s3.ap-southeast-2.amazonaws.com/item_4.jpeg",
     "price": 699,
     "description": "Planter Duo",
     "countInStock": 15

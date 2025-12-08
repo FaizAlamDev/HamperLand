@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { INDIAN_STATES } from '@/types'
+import { INDIAN_STATES, type FormError } from '@/types'
 
 export const Route = createFileRoute('/checkout')({
   component: CheckoutRoute,
@@ -39,27 +39,66 @@ function CheckoutRoute() {
   const totalItems = getTotalItems()
   const totalPrice = getTotalPrice()
 
-  const isFormValid = () => {
-    if (
-      !name.trim() ||
-      !phone.trim() ||
-      !address.trim() ||
-      !city.trim() ||
-      !stateText.trim() ||
-      !pincode.trim()
-    )
-      return false
-    if (!/^[0-9]{6}$/.test(pincode.trim())) return false
-    if (!/^[0-9]{10}$/.test(phone.trim())) return false
-    return true
+  const [errors, setErrors] = useState<FormError[]>([])
+
+  const addError = (message: string) => {
+    const id = Date.now() + Math.random()
+    setErrors((prev) => [...prev, { id, message }])
+
+    setTimeout(() => {
+      setErrors((prev) => prev.filter((e) => e.id !== id))
+    }, 5000)
   }
 
   const placeOrder = () => {
     if (items.length === 0) return
-    if (!isFormValid()) {
-      alert('Please fill required fields correctly')
-      return
+    setErrors([])
+
+    let hasError = false
+    const trimmedName = name.trim()
+    const trimmedPhone = phone.trim()
+    const trimmedAddress = address.trim()
+    const trimmedCity = city.trim()
+    const trimmedState = stateText.trim()
+    const trimmedPincode = pincode.trim()
+
+    if (!trimmedName) {
+      addError('Full name is required.')
+      hasError = true
     }
+
+    if (!trimmedPhone) {
+      addError('Phone number is required.')
+      hasError = true
+    } else if (!/^[0-9]{10}$/.test(trimmedPhone)) {
+      addError('Phone number must be exactly 10 digits.')
+      hasError = true
+    }
+
+    if (!trimmedAddress) {
+      addError('Address is required.')
+      hasError = true
+    }
+
+    if (!trimmedCity) {
+      addError('City name is required.')
+      hasError = true
+    }
+
+    if (!trimmedState) {
+      addError('State is required.')
+      hasError = true
+    }
+
+    if (!trimmedPincode) {
+      addError('Pincode is required.')
+      hasError = true
+    } else if (!/^[0-9]{6}$/.test(trimmedPincode)) {
+      addError('Pincode must be exactly 6 digits.')
+      hasError = true
+    }
+
+    if (hasError) return
 
     setPlacing(true)
 
@@ -106,7 +145,28 @@ function CheckoutRoute() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-2xl font-semibold mb-6">Checkout</h1>
-
+      {errors.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {errors.map((err) => (
+            <div
+              key={err.id}
+              className="flex items-start justify-between rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm"
+            >
+              <p className="text-destructive">{err.message}</p>
+              <button
+                type="button"
+                onClick={() =>
+                  setErrors((prev) => prev.filter((e) => e.id !== err.id))
+                }
+                className="ml-3 text-destructive/70 hover:text-destructive"
+                aria-label="Dismiss error"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
           <Card>
