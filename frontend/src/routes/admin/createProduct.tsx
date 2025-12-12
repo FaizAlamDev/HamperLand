@@ -49,20 +49,17 @@ function CreateProduct() {
     setStatus('idle')
 
     try {
-      const response = await fetch(
-        import.meta.env.VITE_CREATE_PRODUCT_API_URL,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: formData.name,
-            price: Number(formData.price),
-            description: formData.description,
-            countInStock: formData.countInStock,
-            contentType: file.type,
-          }),
-        },
-      )
+      const response = await fetch(import.meta.env.VITE_PRODUCT_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          price: Number(formData.price),
+          description: formData.description,
+          countInStock: formData.countInStock,
+          contentType: file.type,
+        }),
+      })
 
       if (!response.ok) throw new Error('Failed to create product entry')
 
