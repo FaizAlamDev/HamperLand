@@ -47,7 +47,7 @@ function CartRoute() {
           <div className="md:col-span-2 space-y-4">
             {items.map((item: CartItem) => (
               <div
-                key={item._id}
+                key={item.productId}
                 className="flex flex-col md:flex-row gap-4 rounded-lg border bg-card p-4"
               >
                 <img
@@ -57,7 +57,7 @@ function CartRoute() {
                 />
 
                 <div className="flex-1 min-w-0">
-                  <Link to="/product/$id" params={{ id: item._id }}>
+                  <Link to="/product/$id" params={{ id: item.productId }}>
                     <h3 className="font-semibold hover:underline truncate">
                       {item.name}
                     </h3>
@@ -72,7 +72,9 @@ function CartRoute() {
 
                     <Select
                       value={String(item.qty)}
-                      onValueChange={(v) => updateQty(item._id, Number(v))}
+                      onValueChange={(v) =>
+                        updateQty(item.productId, Number(v))
+                      }
                     >
                       <SelectTrigger className="w-20 h-8">
                         <SelectValue />
@@ -89,7 +91,7 @@ function CartRoute() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => removeItem(item._id)}
+                      onClick={() => removeItem(item.productId)}
                       aria-label={`Remove ${item.name} from cart`}
                       className="ml-2"
                     >

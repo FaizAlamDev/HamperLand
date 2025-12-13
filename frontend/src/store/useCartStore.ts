@@ -9,12 +9,14 @@ export const useCartStore = create<CartState>()(
 
       addItem: (product, qty = 1) => {
         set((state) => {
-          const exists = state.items.find((i) => i._id === product._id)
+          const exists = state.items.find(
+            (i) => i.productId === product.productId,
+          )
 
           if (exists) {
             return {
               items: state.items.map((i) =>
-                i._id === product._id
+                i.productId === product.productId
                   ? {
                       ...i,
                       qty: Math.min(
@@ -37,14 +39,16 @@ export const useCartStore = create<CartState>()(
       },
 
       removeItem: (id) => {
-        set((state) => ({ items: state.items.filter((i) => i._id !== id) }))
+        set((state) => ({
+          items: state.items.filter((i) => i.productId !== id),
+        }))
       },
 
       updateQty: (id, qty) => {
         if (qty <= 0) return
         set((state) => ({
           items: state.items.map((i) =>
-            i._id === id
+            i.productId === id
               ? { ...i, qty: Math.min(qty, i.countInStock ?? qty) }
               : i,
           ),

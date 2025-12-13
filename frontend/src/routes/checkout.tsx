@@ -108,7 +108,7 @@ function CheckoutRoute() {
       const order = {
         id: orderId,
         items: items.map((i) => ({
-          _id: i._id,
+          productId: i.productId,
           name: i.name,
           qty: i.qty,
           price: i.price,
@@ -265,7 +265,7 @@ function CheckoutRoute() {
                 <div className="mt-4 space-y-2 max-h-64 overflow-auto">
                   {items.map((i) => (
                     <div
-                      key={i._id}
+                      key={i.productId}
                       className="flex items-center justify-between"
                     >
                       <div className="flex items-center gap-3">

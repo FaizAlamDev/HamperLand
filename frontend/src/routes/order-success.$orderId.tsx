@@ -66,7 +66,10 @@ function OrderSuccessRoute() {
             <div className="mb-2 text-sm text-muted-foreground">Items</div>
             <div className="space-y-2">
               {order.items.map((i: any) => (
-                <div key={i._id} className="flex items-center justify-between">
+                <div
+                  key={i.productId}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3">
                     <img
                       src={i.image}

@@ -9,7 +9,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow my-3 rounded-lg">
-      <Link to="/product/$id" params={{ id: product._id }}>
+      <Link to="/product/$id" params={{ id: product.productId }}>
         <img
           src={product.image}
           alt={product.name}
@@ -18,7 +18,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       <CardContent className="p-4">
-        <Link to="/product/$id" params={{ id: product._id }}>
+        <Link to="/product/$id" params={{ id: product.productId }}>
           <h3 className="font-semibold text-lg hover:underline">
             {product.name}
           </h3>

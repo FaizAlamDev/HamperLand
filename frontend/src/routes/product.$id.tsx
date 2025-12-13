@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -9,24 +9,32 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import mockProducts from '@/mock/mockProducts.json'
 import type { Product } from '@/types'
 import useCartStore from '@/store/useCartStore'
+import { useProducts } from '@/hooks/useProducts'
 
 export const Route = createFileRoute('/product/$id')({
   component: ProductScreen,
 })
 
 function ProductScreen() {
+  const { data: products = [], isLoading } = useProducts()
+
   const [qty, setQty] = useState('1')
 
-  const productMap = Object.fromEntries(mockProducts.map((p) => [p._id, p]))
-
   const { id } = Route.useParams()
-  const product: Product = productMap[id]
-
   const addItem = useCartStore((state) => state.addItem)
   const navigate = useNavigate()
+
+  const productMap = useMemo(() => {
+    return Object.fromEntries(products.map((p) => [p.productId, p]))
+  }, [products])
+
+  const product: Product = productMap[id]
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
