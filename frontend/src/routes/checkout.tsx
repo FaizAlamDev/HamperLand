@@ -1,19 +1,10 @@
 import { useState } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import useCartStore from '@/store/useCartStore'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { INDIAN_STATES, type FormError } from '@/types'
+import { type FormError } from '@/types'
+import OrderSummary from '@/components/OrderSummary'
+import CheckoutForm from '@/components/CheckoutForm'
+import ErrorList from '@/components/ErrorList'
 
 export const Route = createFileRoute('/checkout')({
   component: CheckoutRoute,
@@ -48,6 +39,10 @@ function CheckoutRoute() {
     setTimeout(() => {
       setErrors((prev) => prev.filter((e) => e.id !== id))
     }, 5000)
+  }
+
+  const dismissError = (id: number) => {
+    setErrors((prev) => prev.filter((e) => e.id !== id))
   }
 
   const placeOrder = () => {
@@ -145,185 +140,34 @@ function CheckoutRoute() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-2xl font-semibold mb-6">Checkout</h1>
-      {errors.length > 0 && (
-        <div className="mb-4 space-y-2">
-          {errors.map((err) => (
-            <div
-              key={err.id}
-              className="flex items-start justify-between rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm"
-            >
-              <p className="text-destructive">{err.message}</p>
-              <button
-                type="button"
-                onClick={() =>
-                  setErrors((prev) => prev.filter((e) => e.id !== err.id))
-                }
-                className="ml-3 text-destructive/70 hover:text-destructive"
-                aria-label="Dismiss error"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+
+      <ErrorList errors={errors} onDismiss={dismissError} />
+
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Shipping Details</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              <Input
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <Input
-                placeholder="Phone (10 digits)"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-              <Textarea
-                placeholder="Address (house, street, landmark)"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
-                <div className="sm:col-span-1">
-                  <Input
-                    placeholder="Type City Name"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                  />
-                </div>
+        <CheckoutForm
+          name={name}
+          setName={setName}
+          phone={phone}
+          setPhone={setPhone}
+          address={address}
+          setAddress={setAddress}
+          city={city}
+          setCity={setCity}
+          stateText={stateText}
+          setStateText={setStateText}
+          pincode={pincode}
+          setPincode={setPincode}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+        />
 
-                <div>
-                  <Select
-                    value={stateText}
-                    onValueChange={(v) => setStateText(v)}
-                  >
-                    <SelectTrigger className="w-full h-10 px-3 text-sm font-normal">
-                      <SelectValue placeholder="Select State" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDIAN_STATES.map((st) => (
-                        <SelectItem key={st} value={st}>
-                          {st}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Input
-                    placeholder="Pincode (6 digits)"
-                    value={pincode}
-                    onChange={(e) => setPincode(e.target.value)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={(v) => setPaymentMethod(v as 'cod' | 'upi')}
-              >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="cod" id="pm-cod" />
-                  <label htmlFor="pm-cod">Cash on Delivery (COD)</label>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="upi" id="pm-upi" />
-                  <label htmlFor="pm-upi">UPI</label>
-                </div>
-              </RadioGroup>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Items ({totalItems})</span>
-                </div>
-
-                <div className="mt-4 space-y-2 max-h-64 overflow-auto">
-                  {items.map((i) => (
-                    <div
-                      key={i.productId}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={i.image}
-                          alt={i.name}
-                          className="w-12 h-10 object-cover rounded"
-                        />
-                        <div>
-                          <div className="text-sm font-medium">{i.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            Qty: {i.qty}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold">
-                        ₹{(i.qty * i.price).toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Subtotal</span>
-                  <span className="font-semibold">
-                    ₹{totalPrice.toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Shipping</span>
-                  <span>₹0.00</span>
-                </div>
-
-                <div className="flex justify-between text-base font-bold">
-                  <span>Total</span>
-                  <span>₹{totalPrice.toFixed(2)}</span>
-                </div>
-
-                <Button
-                  className="w-full"
-                  onClick={placeOrder}
-                  disabled={items.length === 0 || placing}
-                >
-                  {placing ? 'Placing order...' : 'Place Order'}
-                </Button>
-
-                <Link to="/cart">
-                  <Button variant="ghost" className="w-full">
-                    Back to Cart
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <OrderSummary
+          items={items}
+          totalItems={totalItems}
+          totalPrice={totalPrice}
+          placeOrder={placeOrder}
+          placing={placing}
+        />
       </div>
     </div>
   )
