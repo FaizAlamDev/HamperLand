@@ -62,12 +62,20 @@ export class InfraStack extends cdk.Stack {
       value: distribution.distributionDomainName,
     });
 
-    // DynamoDB Table
-    const productTable = new dynamodb.Table(this, "ProductsTable", {
+    // DynamoDB Tables
+    const productsTable = new dynamodb.Table(this, "ProductsTable", {
       partitionKey: { name: "productId", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PROVISIONED,
       readCapacity: 25,
       writeCapacity: 25,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    const ordersTable = new dynamodb.Table(this, "OrdersTable", {
+      partitionKey: { name: "orderId", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PROVISIONED,
+      readCapacity: 5,
+      writeCapacity: 5,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
@@ -81,7 +89,7 @@ export class InfraStack extends cdk.Stack {
         handler: "create-product.handler",
         environment: {
           BUCKET_NAME: productImagesBucket.bucketName,
-          TABLE_NAME: productTable.tableName,
+          TABLE_NAME: productsTable.tableName,
           CLOUDFRONT_DOMAIN: distribution.distributionDomainName,
         },
       }
@@ -92,14 +100,34 @@ export class InfraStack extends cdk.Stack {
       code: lambda.Code.fromAsset("lambda"),
       handler: "get-products.handler",
       environment: {
-        TABLE_NAME: productTable.tableName,
+        TABLE_NAME: productsTable.tableName,
+      },
+    });
+
+    const createOrderLambda = new lambda.Function(this, "CreateOrderHandler", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      code: lambda.Code.fromAsset("lambda"),
+      handler: "create-order.handler",
+      environment: {
+        TABLE_NAME: ordersTable.tableName,
+      },
+    });
+
+    const getOrderLambda = new lambda.Function(this, "GetOrderHandler", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      code: lambda.Code.fromAsset("lambda"),
+      handler: "get-order.handler",
+      environment: {
+        TABLE_NAME: ordersTable.tableName,
       },
     });
 
     // Permissions
-    productTable.grantWriteData(createProductLambda);
-    productTable.grantReadData(getProductsLambda);
+    productsTable.grantWriteData(createProductLambda);
+    productsTable.grantReadData(getProductsLambda);
     productImagesBucket.grantPut(createProductLambda);
+    ordersTable.grantWriteData(createOrderLambda);
+    ordersTable.grantReadData(getOrderLambda);
 
     // API Gateway
     const api = new apigateway.RestApi(this, "ProductApi", {
@@ -118,6 +146,18 @@ export class InfraStack extends cdk.Stack {
     productsResource.addMethod(
       "GET",
       new apigateway.LambdaIntegration(getProductsLambda)
+    );
+
+    const ordersResource = api.root.addResource("orders");
+    ordersResource.addMethod(
+      "POST",
+      new apigateway.LambdaIntegration(createOrderLambda)
+    );
+
+    const singleOrderResource = ordersResource.addResource("{id}");
+    singleOrderResource.addMethod(
+      "GET",
+      new apigateway.LambdaIntegration(getOrderLambda)
     );
   }
 }
