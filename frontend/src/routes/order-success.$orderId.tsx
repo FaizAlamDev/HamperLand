@@ -1,6 +1,7 @@
 import { createFileRoute, useParams, Link } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useOrder } from '@/hooks/useOrders'
 
 export const Route = createFileRoute('/order-success/$orderId')({
   component: OrderSuccessRoute,
@@ -8,25 +9,21 @@ export const Route = createFileRoute('/order-success/$orderId')({
 
 function OrderSuccessRoute() {
   const { orderId } = useParams({ from: '/order-success/$orderId' })
-  const storageKey = `hamperland-order-${orderId}`
 
-  let order: null | any = null
-  try {
-    const raw = sessionStorage.getItem(storageKey)
-    if (raw) order = JSON.parse(raw)
-  } catch (e) {
-    console.warn('Failed to parse order from sessionStorage', e)
+  const { data: order, isLoading, isError } = useOrder(orderId)
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
-  if (!order) {
+  if (isError || !order) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
         <Card>
           <CardContent className="text-center">
             <h2 className="text-xl font-semibold mb-2">Order not found</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              We couldn't find the order details. If you just placed an order,
-              try returning to the store.
+              We couldn't retrieve the details for order #{orderId}.
             </p>
             <Link to="/">
               <Button>Back to Home</Button>
@@ -45,9 +42,13 @@ function OrderSuccessRoute() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-lg">
-            🎉 Thank you! Your order <strong>{order.id}</strong> has been
+            🎉 Thank you! Your order <strong>{order.orderId}</strong> has been
             placed.
           </p>
+
+          <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+            {order.orderStatus}
+          </div>
 
           <div className="rounded border bg-card p-4">
             <div className="mb-2 text-sm text-muted-foreground">Shipping</div>
@@ -103,17 +104,6 @@ function OrderSuccessRoute() {
               <Link to="/">
                 <Button>Continue Shopping</Button>
               </Link>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  try {
-                    sessionStorage.removeItem(storageKey)
-                  } catch {}
-                  window.location.href = '/'
-                }}
-              >
-                Done
-              </Button>
             </div>
           </div>
         </CardContent>

@@ -19,6 +19,13 @@ export type CartState = {
   getTotalPrice: () => number
 }
 
+export type Order = {
+  items: Omit<CartItem, 'description' | 'countInStock'>[]
+  shippingAddress: any
+  paymentMethod: 'cod' | 'upi'
+  totals: any
+}
+
 export const INDIAN_STATES = [
   'Andhra Pradesh',
   'Arunachal Pradesh',

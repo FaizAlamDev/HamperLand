@@ -5,6 +5,7 @@ import { type FormError } from '@/types'
 import OrderSummary from '@/components/OrderSummary'
 import CheckoutForm from '@/components/CheckoutForm'
 import ErrorList from '@/components/ErrorList'
+import { useCreateOrder } from '@/hooks/useOrders'
 
 export const Route = createFileRoute('/checkout')({
   component: CheckoutRoute,
@@ -24,7 +25,6 @@ function CheckoutRoute() {
   const [pincode, setPincode] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi'>('cod')
 
-  const [placing, setPlacing] = useState(false)
   const navigate = useNavigate()
 
   const totalItems = getTotalItems()
@@ -45,7 +45,9 @@ function CheckoutRoute() {
     setErrors((prev) => prev.filter((e) => e.id !== id))
   }
 
-  const placeOrder = () => {
+  const { mutateAsync: placeOrderMutation, isPending } = useCreateOrder()
+
+  const placeOrder = async () => {
     if (items.length === 0) return
     setErrors([])
 
@@ -95,46 +97,33 @@ function CheckoutRoute() {
 
     if (hasError) return
 
-    setPlacing(true)
+    const orderPayload = {
+      items: items.map((i) => ({
+        productId: i.productId,
+        name: i.name,
+        qty: i.qty,
+        price: i.price,
+        image: i.image,
+      })),
+      shippingAddress: {
+        name: trimmedName,
+        phone: trimmedPhone,
+        address: trimmedAddress,
+        city: trimmedCity,
+        state: trimmedState,
+        pincode: trimmedPincode,
+      },
+      paymentMethod,
+      totals: { totalItems, totalPrice },
+    }
 
-    // Simulate network latency until no backend
-    setTimeout(() => {
-      const orderId = `HL-${Math.random().toString(36).slice(2, 9).toUpperCase()}`
-      const order = {
-        id: orderId,
-        items: items.map((i) => ({
-          productId: i.productId,
-          name: i.name,
-          qty: i.qty,
-          price: i.price,
-          image: i.image,
-        })),
-        shippingAddress: {
-          name,
-          phone,
-          address,
-          city,
-          state: stateText,
-          pincode,
-        },
-        paymentMethod,
-        totals: { totalItems, totalPrice },
-        createdAt: new Date().toISOString(),
-      }
+    const data = await placeOrderMutation(orderPayload)
 
-      try {
-        sessionStorage.setItem(
-          `hamperland-order-${orderId}`,
-          JSON.stringify(order),
-        )
-      } catch (e) {
-        console.warn('Could not write order to sessionStorage', e)
-      }
-
-      clearCart()
-      setPlacing(false)
-      navigate({ to: '/order-success/$orderId', params: { orderId } })
-    }, 900)
+    clearCart()
+    navigate({
+      to: '/order-success/$orderId',
+      params: { orderId: data.order.orderId },
+    })
   }
 
   return (
@@ -166,7 +155,7 @@ function CheckoutRoute() {
           totalItems={totalItems}
           totalPrice={totalPrice}
           placeOrder={placeOrder}
-          placing={placing}
+          placing={isPending}
         />
       </div>
     </div>
