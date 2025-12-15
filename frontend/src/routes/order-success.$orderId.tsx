@@ -2,6 +2,7 @@ import { createFileRoute, useParams, Link } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useOrder } from '@/hooks/useOrders'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export const Route = createFileRoute('/order-success/$orderId')({
   component: OrderSuccessRoute,
@@ -13,7 +14,7 @@ function OrderSuccessRoute() {
   const { data: order, isLoading, isError } = useOrder(orderId)
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <LoadingSpinner />
   }
 
   if (isError || !order) {

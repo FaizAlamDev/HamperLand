@@ -1,4 +1,5 @@
 import ProductsGrid from '@/components/ProductGrid'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { useProducts } from '@/hooks/useProducts'
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -9,7 +10,7 @@ export const Route = createFileRoute('/')({
 function App() {
   const { data: products, isLoading, error } = useProducts()
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <LoadingSpinner />
   if (error) return <div>Error Loading Products</div>
 
   return (

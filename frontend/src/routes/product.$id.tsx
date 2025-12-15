@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import type { Product } from '@/types'
 import useCartStore from '@/store/useCartStore'
 import { useProducts } from '@/hooks/useProducts'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export const Route = createFileRoute('/product/$id')({
   component: ProductScreen,
@@ -32,9 +33,7 @@ function ProductScreen() {
 
   const product: Product = productMap[id]
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
+  if (isLoading) return <LoadingSpinner />
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
