@@ -40,7 +40,7 @@ export class InfraStack extends cdk.Stack {
           allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
           compress: true,
         },
-      }
+      },
     );
 
     productImagesBucket.addToResourcePolicy(
@@ -55,7 +55,7 @@ export class InfraStack extends cdk.Stack {
             "AWS:SourceArn": distribution.distributionArn,
           },
         },
-      })
+      }),
     );
 
     new cdk.CfnOutput(this, "CloudFrontURL", {
@@ -65,17 +65,13 @@ export class InfraStack extends cdk.Stack {
     // DynamoDB Tables
     const productsTable = new dynamodb.Table(this, "ProductsTable", {
       partitionKey: { name: "productId", type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PROVISIONED,
-      readCapacity: 25,
-      writeCapacity: 25,
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const ordersTable = new dynamodb.Table(this, "OrdersTable", {
       partitionKey: { name: "orderId", type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PROVISIONED,
-      readCapacity: 5,
-      writeCapacity: 5,
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
@@ -92,7 +88,7 @@ export class InfraStack extends cdk.Stack {
           TABLE_NAME: productsTable.tableName,
           CLOUDFRONT_DOMAIN: distribution.distributionDomainName,
         },
-      }
+      },
     );
 
     const getProductsLambda = new lambda.Function(this, "GetProductsHandler", {
@@ -141,23 +137,23 @@ export class InfraStack extends cdk.Stack {
     const productsResource = api.root.addResource("products");
     productsResource.addMethod(
       "POST",
-      new apigateway.LambdaIntegration(createProductLambda)
+      new apigateway.LambdaIntegration(createProductLambda),
     );
     productsResource.addMethod(
       "GET",
-      new apigateway.LambdaIntegration(getProductsLambda)
+      new apigateway.LambdaIntegration(getProductsLambda),
     );
 
     const ordersResource = api.root.addResource("orders");
     ordersResource.addMethod(
       "POST",
-      new apigateway.LambdaIntegration(createOrderLambda)
+      new apigateway.LambdaIntegration(createOrderLambda),
     );
 
     const singleOrderResource = ordersResource.addResource("{id}");
     singleOrderResource.addMethod(
       "GET",
-      new apigateway.LambdaIntegration(getOrderLambda)
+      new apigateway.LambdaIntegration(getOrderLambda),
     );
   }
 }
