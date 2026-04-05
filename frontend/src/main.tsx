@@ -1,33 +1,48 @@
-import { StrictMode } from 'react'
+import { useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { RouterProvider } from '@tanstack/react-router'
+import { AuthProvider, useAuth } from 'react-oidc-context'
 
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
-
-// Import the generated route tree
-import { routeTree } from './routeTree.gen'
+import { createAppRouter } from './router.ts'
 
 import './styles.css'
-
-// Create a new router instance
+import LoadingSpinner from './components/LoadingSpinner.tsx'
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
-const router = createRouter({
-  routeTree,
-  context: {
-    ...TanStackQueryProviderContext,
-  },
-  defaultPreload: 'intent',
-  scrollRestoration: true,
-  defaultStructuralSharing: true,
-  defaultPreloadStaleTime: 0,
-})
 
-// Register the router instance for type safety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router
+const cognitoAuthConfig = {
+  authority: import.meta.env.VITE_COGNITO_AUTHORITY,
+  client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
+  redirect_uri: import.meta.env.VITE_COGNITO_REDIRECT_URI,
+  response_type: 'code',
+  scope: 'email openid phone',
+  automaticSilentRenew: true,
+}
+
+function AppRouter() {
+  const auth = useAuth()
+
+  if (auth.isLoading) {
+    return <LoadingSpinner />
   }
+
+  if (auth.error) {
+    return (
+      <div className="h-screen flex items-center justify-center text-red-500">
+        Authentication error
+      </div>
+    )
+  }
+
+  const router = useMemo(() => {
+    return createAppRouter({
+      ...TanStackQueryProviderContext,
+      auth,
+    })
+  }, [auth.isAuthenticated])
+
+  return <RouterProvider router={router} />
 }
 
 // Render the app
@@ -35,10 +50,10 @@ const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
-    <StrictMode>
+    <AuthProvider {...cognitoAuthConfig}>
       <TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-        <RouterProvider router={router} />
+        <AppRouter />
       </TanStackQueryProvider.Provider>
-    </StrictMode>,
+    </AuthProvider>,
   )
 }

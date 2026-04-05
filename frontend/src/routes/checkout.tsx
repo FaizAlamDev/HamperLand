@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import useCartStore from '@/store/useCartStore'
 import { type FormError } from '@/types'
 import OrderSummary from '@/components/OrderSummary'
@@ -8,6 +8,14 @@ import ErrorList from '@/components/ErrorList'
 import { useCreateOrder } from '@/hooks/useOrders'
 
 export const Route = createFileRoute('/checkout')({
+  beforeLoad: async ({ context, location }) => {
+    const auth = context.auth
+
+    if (!auth.isAuthenticated) {
+      sessionStorage.setItem('post_login_redirect', location.pathname)
+      throw redirect({ to: '/login' })
+    }
+  },
   component: CheckoutRoute,
 })
 
