@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
@@ -6,6 +9,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
+import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as iam from "aws-cdk-lib/aws-iam";
 
 export class InfraStack extends cdk.Stack {
@@ -57,10 +61,6 @@ export class InfraStack extends cdk.Stack {
         },
       }),
     );
-
-    new cdk.CfnOutput(this, "CloudFrontURL", {
-      value: distribution.distributionDomainName,
-    });
 
     // DynamoDB Tables
     const productsTable = new dynamodb.Table(this, "ProductsTable", {
@@ -155,5 +155,100 @@ export class InfraStack extends cdk.Stack {
       "GET",
       new apigateway.LambdaIntegration(getOrderLambda),
     );
+
+    // COGNITO USER POOL
+    const userPool = new cognito.UserPool(this, "UserPool", {
+      signInAliases: {
+        email: true,
+      },
+      autoVerify: {
+        email: true,
+      },
+      standardAttributes: {
+        email: {
+          required: false,
+          mutable: true,
+        },
+        fullname: {
+          required: false,
+          mutable: true,
+        },
+        phoneNumber: {
+          required: false,
+          mutable: true,
+        },
+      },
+      passwordPolicy: {
+        minLength: 8,
+        requireDigits: true,
+      },
+
+      accountRecovery: cognito.AccountRecovery.EMAIL_AND_PHONE_WITHOUT_MFA,
+      selfSignUpEnabled: true,
+      signInCaseSensitive: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // GOOGLE IDENTITY PROVIDER
+    const googleProvider = new cognito.UserPoolIdentityProviderGoogle(
+      this,
+      "Google",
+      {
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecretValue: cdk.SecretValue.unsafePlainText(
+          process.env.GOOGLE_CLIENT_SECRET!,
+        ),
+        userPool,
+        scopes: ["openid", "email", "profile"],
+        attributeMapping: {
+          email: cognito.ProviderAttribute.GOOGLE_EMAIL,
+          fullname: cognito.ProviderAttribute.GOOGLE_NAME,
+        },
+      },
+    );
+
+    // USER POOL CLIENT (OAuth)
+    const userPoolClient = new cognito.UserPoolClient(this, "UserPoolClient", {
+      userPool,
+
+      authFlows: {
+        userSrp: true,
+        userPassword: false,
+      },
+
+      preventUserExistenceErrors: true,
+      enableTokenRevocation: true,
+
+      oAuth: {
+        flows: {
+          authorizationCodeGrant: true,
+        },
+        scopes: [
+          cognito.OAuthScope.OPENID,
+          cognito.OAuthScope.EMAIL,
+          cognito.OAuthScope.PROFILE,
+        ],
+        callbackUrls: ["http://localhost:3000"],
+        logoutUrls: ["http://localhost:3000"],
+      },
+
+      supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.COGNITO,
+        cognito.UserPoolClientIdentityProvider.GOOGLE,
+      ],
+    });
+
+    userPoolClient.node.addDependency(googleProvider);
+
+    // HOSTED UI DOMAIN
+    const domain = userPool.addDomain("CognitoDomain", {
+      cognitoDomain: {
+        domainPrefix: "hamperland-auth",
+      },
+    });
+
+    new cdk.CfnOutput(this, "CognitoDomain", {
+      value: domain.domainName,
+    });
   }
 }

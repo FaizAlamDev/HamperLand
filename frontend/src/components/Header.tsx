@@ -30,6 +30,8 @@ export default function Header() {
     return <div>Error</div>
   }
 
+  const user = auth.user?.profile
+
   return (
     <header className="w-full h-16 bg-white shadow-md flex items-center justify-between px-6">
       <div className="flex items-center space-x-2">
@@ -67,13 +69,19 @@ export default function Header() {
             Login{' '}
           </button>
         ) : (
-          <button
-            onClick={handleLogout}
-            className="text-sm px-4 py-2 bg-gray-800 text-white rounded"
-          >
-            {' '}
-            Logout{' '}
-          </button>
+          <>
+            <span className="text-sm text-gray-600">
+              {user?.name || user?.email}
+            </span>
+
+            <button
+              onClick={handleLogout}
+              className="text-sm px-4 py-2 bg-gray-800 text-white rounded"
+            >
+              {' '}
+              Logout{' '}
+            </button>
+          </>
         )}
       </div>
     </header>
