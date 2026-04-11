@@ -125,37 +125,6 @@ export class InfraStack extends cdk.Stack {
     ordersTable.grantWriteData(createOrderLambda);
     ordersTable.grantReadData(getOrderLambda);
 
-    // API Gateway
-    const api = new apigateway.RestApi(this, "ProductApi", {
-      restApiName: "Ecommerce Service",
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS,
-      },
-    });
-
-    const productsResource = api.root.addResource("products");
-    productsResource.addMethod(
-      "POST",
-      new apigateway.LambdaIntegration(createProductLambda),
-    );
-    productsResource.addMethod(
-      "GET",
-      new apigateway.LambdaIntegration(getProductsLambda),
-    );
-
-    const ordersResource = api.root.addResource("orders");
-    ordersResource.addMethod(
-      "POST",
-      new apigateway.LambdaIntegration(createOrderLambda),
-    );
-
-    const singleOrderResource = ordersResource.addResource("{id}");
-    singleOrderResource.addMethod(
-      "GET",
-      new apigateway.LambdaIntegration(getOrderLambda),
-    );
-
     // COGNITO USER POOL
     const userPool = new cognito.UserPool(this, "UserPool", {
       signInAliases: {
@@ -250,5 +219,54 @@ export class InfraStack extends cdk.Stack {
     new cdk.CfnOutput(this, "CognitoDomain", {
       value: domain.domainName,
     });
+
+    // Cognito Authorizer
+    const authorizer = new apigateway.CognitoUserPoolsAuthorizer(
+      this,
+      "OrdersAuthorizer",
+      {
+        cognitoUserPools: [userPool],
+      },
+    );
+
+    // API Gateway
+    const api = new apigateway.RestApi(this, "ProductApi", {
+      restApiName: "Ecommerce Service",
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: ["Content-Type", "Authorization"],
+      },
+    });
+
+    const productsResource = api.root.addResource("products");
+    productsResource.addMethod(
+      "POST",
+      new apigateway.LambdaIntegration(createProductLambda),
+    );
+    productsResource.addMethod(
+      "GET",
+      new apigateway.LambdaIntegration(getProductsLambda),
+    );
+
+    const ordersResource = api.root.addResource("orders");
+    ordersResource.addMethod(
+      "POST",
+      new apigateway.LambdaIntegration(createOrderLambda),
+      {
+        authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      },
+    );
+
+    const singleOrderResource = ordersResource.addResource("{id}");
+    singleOrderResource.addMethod(
+      "GET",
+      new apigateway.LambdaIntegration(getOrderLambda),
+      {
+        authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      },
+    );
   }
 }
