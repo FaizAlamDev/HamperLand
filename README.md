@@ -1,98 +1,108 @@
 # Hamperland
 
-A small e-commerce frontend built with React, Vite, and TanStack Router.
-It covers a basic shopping flow — browsing products, cart, checkout, and order confirmation — along with a minimal admin flow for creating products.
+A full-stack e-commerce project with a React frontend and AWS-backed infrastructure.
+It supports product browsing, cart + checkout flow, authentication via Cognito (Google + email/password), and protected admin operations.
 
 ---
 
-## What this project does
+## Features
 
-- Browse products
-- View product details
-- Add/remove items from cart
-- Checkout and create orders
-- View order success page
-- Basic admin page to create products
-
-This repo also contains an `infra` package using AWS CDK.
+- Product listing and details
+- Cart and checkout flow
+- Order creation and success page
+- Admin product creation
+- Authentication via Cognito (Google + email/password)
+- Protected admin routes (`admin` group required)
 
 ---
 
 ## Tech stack
 
-Frontend:
+### Frontend
 
-- React 19
-- Vite
-- TypeScript
-- TanStack Router
-- TanStack Query
-- Zustand
+- React 19, Vite, TypeScript
+- TanStack Router, TanStack Query
+- Zustand (cart state)
 - Tailwind CSS + Radix UI
 
-Infra:
+### Infra
 
 - AWS CDK (TypeScript)
+- S3 (frontend hosting, product images)
+- CloudFront (CDN)
+- Lambda (API)
+- API Gateway (Cognito authorizer)
+- Cognito (auth + groups)
+- DynamoDB (products, orders)
 
 ---
 
-## Getting started
+## Architecture
 
-### Prerequisites
-
-- Node.js (>= 18)
-- pnpm
-
----
-
-### Install
-
-```bash
-pnpm install
-```
+- Frontend is built with Vite and deployed to S3
+- CloudFront serves both frontend and product images
+- API Gateway routes requests to Lambda functions
+- Lambda functions handle products and orders
+- DynamoDB stores product and order data
+- Cognito handles authentication and authorization
 
 ---
 
-### Environment variables
+## Environment variables
 
-Create a `.env` file in the `frontend` directory:
+### Frontend (`frontend/.env`)
 
 ```env
 VITE_PRODUCT_API_URL=
 VITE_ORDERS_API_URL=
+
+VITE_COGNITO_DOMAIN=
+VITE_COGNITO_CLIENT_ID=
+VITE_COGNITO_AUTHORITY=
 ```
 
 ---
 
-### Run frontend
+### Infra (`infra/.env`)
+
+```env
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
+
+---
+
+## Local development
 
 ```bash
+pnpm install
+
 cd frontend
 pnpm dev
 ```
 
-App runs on:
-http://localhost:3000
+App runs on http://localhost:3000
 
 ---
 
-### Build
+## Deployment
 
 ```bash
-pnpm build
+pnpm deploy
 ```
+
+This:
+
+- Builds frontend
+- Deploys CDK stack
+- Uploads assets to S3
+- Serves via CloudFront
 
 ---
 
-### Preview build
+## Project structure
 
-```bash
-pnpm serve
-```
-
----
-
-## Project structure (frontend)
+### Frontend
 
 ```
 src/
@@ -100,74 +110,57 @@ src/
   components/     # UI + feature components
   hooks/          # React Query hooks
   routes/         # File-based routes
-  store/          # Zustand store (cart)
-  integrations/   # Providers (React Query)
+  store/          # Zustand store
+  integrations/   # Providers
   lib/            # Utilities
   types/          # Types
 ```
 
 ---
 
+### Infra
+
+```
+infra/
+  # CDK definitions for:
+  # - S3 (frontend + images)
+  # - CloudFront distributions
+  # - Lambda functions
+  # - API Gateway
+  # - Cognito (auth, Google provider, groups)
+  # - DynamoDB (products, orders)
+```
+
+---
+
 ## Routing
 
-- `/` → product listing
-- `/product/:id` → product details
-- `/cart` → cart
-- `/checkout` → checkout
-- `/order-success/:orderId` → success page
-- `/admin/createProduct` → admin page
+- `/`
+- `/product/:id`
+- `/cart`
+- `/checkout`
+- `/order-success/:orderId`
+- `/admin/createProduct` (protected)
 
 ---
 
-## State management
+## Access control
 
-- Server state → TanStack Query
-- Client state → Zustand (cart)
+- Authenticated users:
+  - Create orders
 
----
-
-## API layer
-
-```
-src/api/
-  products.ts
-  orders.ts
-```
-
-Uses fetch for requests.
+- Admin users (Cognito group: `admin`):
+  - Create products
 
 ---
 
-## UI
-
-- Tailwind CSS
-- Radix UI primitives
-- Reusable components in `components/ui`
-
----
-
-## Infra (AWS CDK)
-
-Located in `infra/`.
-
-### Commands
+## Scripts
 
 ```bash
-cd infra
-
-npx tsc
-npx cdk synth
-npx cdk deploy
+pnpm build:frontend
+pnpm deploy:infra
+pnpm deploy
 ```
-
----
-
-## Notes
-
-- Uses TanStack Router file-based routing
-- Query setup: `integrations/tanstack-query/root-provider.tsx`
-- Cart state: `useCartStore.ts`
-- Backend APIs are expected separately
 
 ---
 
