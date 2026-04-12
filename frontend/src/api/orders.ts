@@ -2,10 +2,7 @@ import type { Order } from '@/types'
 
 const API_URL = import.meta.env.VITE_ORDERS_API_URL
 
-export const createOrder = async (
-  orderPayload: Order,
-  token: string | undefined,
-) => {
+export const createOrder = async (orderPayload: Order, token: string) => {
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {

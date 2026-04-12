@@ -135,11 +135,11 @@ export class InfraStack extends cdk.Stack {
       },
       standardAttributes: {
         email: {
-          required: false,
+          required: true,
           mutable: true,
         },
         fullname: {
-          required: false,
+          required: true,
           mutable: true,
         },
         phoneNumber: {
@@ -179,11 +179,6 @@ export class InfraStack extends cdk.Stack {
     // USER POOL CLIENT (OAuth)
     const userPoolClient = new cognito.UserPoolClient(this, "UserPoolClient", {
       userPool,
-
-      authFlows: {
-        userSrp: true,
-        userPassword: false,
-      },
 
       preventUserExistenceErrors: true,
       enableTokenRevocation: true,
@@ -243,6 +238,10 @@ export class InfraStack extends cdk.Stack {
     productsResource.addMethod(
       "POST",
       new apigateway.LambdaIntegration(createProductLambda),
+      {
+        authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      },
     );
     productsResource.addMethod(
       "GET",

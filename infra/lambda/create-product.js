@@ -15,10 +15,28 @@ const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
 exports.handler = async (event) => {
   try {
+    const claims = event.requestContext?.authorizer?.claims;
+    if (!claims) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ message: "Unauthorized" }),
+      };
+    }
+
+    const groups = claims["cognito:groups"] || [];
+
+    if (!groups.includes("admin")) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: "Forbidden: Admins only" }),
+      };
+    }
+
     const body =
       typeof event.body === "string"
         ? JSON.parse(event.body)
         : event.body || {};
+
     if (
       !body.name ||
       !body.description ||
@@ -71,7 +89,7 @@ exports.handler = async (event) => {
       new PutCommand({
         TableName: TABLE,
         Item: productItem,
-      })
+      }),
     );
 
     return {

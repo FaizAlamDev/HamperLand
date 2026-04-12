@@ -26,6 +26,13 @@ const cognitoAuthConfig = {
 function AppRouter() {
   const auth = useAuth()
 
+  const router = useMemo(() => {
+    return createAppRouter({
+      ...TanStackQueryProviderContext,
+      auth,
+    })
+  }, [auth.isAuthenticated])
+
   if (auth.isLoading) {
     return <LoadingSpinner />
   }
@@ -37,13 +44,6 @@ function AppRouter() {
       </div>
     )
   }
-
-  const router = useMemo(() => {
-    return createAppRouter({
-      ...TanStackQueryProviderContext,
-      auth,
-    })
-  }, [auth.isAuthenticated])
 
   return <RouterProvider router={router} />
 }

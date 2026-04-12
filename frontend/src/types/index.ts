@@ -1,3 +1,11 @@
+export type CreateProductInput = {
+  name: string
+  price: number
+  description: string
+  countInStock: number
+  contentType: string
+}
+
 export type Product = {
   productId: string
   name: string

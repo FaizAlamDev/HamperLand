@@ -1,8 +1,22 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useCreateProduct } from '@/hooks/useProducts'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 
 export const Route = createFileRoute('/admin/createProduct')({
   component: CreateProduct,
+  beforeLoad: ({ context }) => {
+    const auth = context.auth
+
+    if (!auth.isAuthenticated) {
+      throw redirect({ to: '/login' })
+    }
+
+    const groups = auth.user?.profile['cognito:groups']
+
+    if (!Array.isArray(groups) || !groups.includes('admin')) {
+      throw redirect({ to: '/' })
+    }
+  },
 })
 
 function CreateProduct() {
@@ -14,8 +28,9 @@ function CreateProduct() {
   })
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+
+  const { mutateAsync: createProductMutation, isPending } = useCreateProduct()
 
   useEffect(() => {
     return () => {
@@ -45,25 +60,20 @@ function CreateProduct() {
     if (!file || !formData.name || !formData.price || !formData.countInStock)
       return
 
-    setIsUploading(true)
     setStatus('idle')
 
     try {
-      const response = await fetch(import.meta.env.VITE_PRODUCT_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          price: Number(formData.price),
-          description: formData.description,
-          countInStock: formData.countInStock,
-          contentType: file.type,
-        }),
-      })
+      const productPayload = {
+        name: formData.name,
+        price: Number(formData.price),
+        description: formData.description,
+        countInStock: Number(formData.countInStock),
+        contentType: file.type,
+      }
 
-      if (!response.ok) throw new Error('Failed to create product entry')
+      const data = await createProductMutation(productPayload)
 
-      const { uploadUrl } = await response.json()
+      const { uploadUrl } = data
 
       const uploadResponse = await fetch(uploadUrl, {
         method: 'PUT',
@@ -82,8 +92,6 @@ function CreateProduct() {
     } catch (error) {
       console.error(error)
       setStatus('error')
-    } finally {
-      setIsUploading(false)
     }
   }
 
@@ -196,12 +204,12 @@ function CreateProduct() {
 
         <button
           type="submit"
-          disabled={isUploading || !file}
+          disabled={isPending || !file}
           className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-            ${isUploading || !file ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'}
+            ${isPending || !file ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'}
           `}
         >
-          {isUploading ? 'Uploading...' : 'Create Product'}
+          {isPending ? 'Uploading...' : 'Create Product'}
         </button>
       </form>
     </div>
