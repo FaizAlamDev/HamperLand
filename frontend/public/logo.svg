@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 340" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+  <defs>
+    <linearGradient id="basketGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dcb38a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c89f78;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="handleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b0805c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#996c4d;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <path d="M 120 150 Q 110 160 110 180 L 110 230 Q 110 250 130 250 L 270 250 Q 290 250 290 230 L 290 180 Q 290 160 280 150 L 120 150 Z" fill="url(#basketGradient)" stroke="#8c6a4a" stroke-width="2"/>
+  <path d="M 150 150 Q 150 80 200 80 Q 250 80 250 150 L 235 150 Q 235 95 200 95 Q 165 95 165 150 L 150 150 Z" fill="url(#handleGradient)" stroke="#8c6a4a" stroke-width="2"/>
+</svg>
