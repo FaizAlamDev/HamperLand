@@ -4,6 +4,7 @@ dotenv.config();
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
@@ -16,7 +17,7 @@ export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // S3 Bucket
+    // S3 Bucket for Product Images
     const productImagesBucket = new s3.Bucket(this, "ProductImagesBucket", {
       versioned: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -31,8 +32,15 @@ export class InfraStack extends cdk.Stack {
       ],
     });
 
-    // Cloudfront
-    const distribution = new cloudfront.Distribution(
+    // S3 Bucket for frontend assets
+    const frontendBucket = new s3.Bucket(this, "FrontendBucket", {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    // Cloudfront distribution for Product Images
+    const productImagesDistribution = new cloudfront.Distribution(
       this,
       "ProductDistribution",
       {
@@ -56,11 +64,50 @@ export class InfraStack extends cdk.Stack {
         resources: [`${productImagesBucket.bucketArn}/*`],
         conditions: {
           StringEquals: {
-            "AWS:SourceArn": distribution.distributionArn,
+            "AWS:SourceArn": productImagesDistribution.distributionArn,
           },
         },
       }),
     );
+
+    // Cloudfront distribution for Frontend assets
+    const frontendDistribution = new cloudfront.Distribution(
+      this,
+      "FrontendDist",
+      {
+        defaultBehavior: {
+          origin:
+            origins.S3BucketOrigin.withOriginAccessControl(frontendBucket),
+          viewerProtocolPolicy:
+            cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        },
+
+        defaultRootObject: "index.html",
+        errorResponses: [
+          {
+            httpStatus: 403,
+            responseHttpStatus: 200,
+            responsePagePath: "/index.html",
+          },
+          {
+            httpStatus: 404,
+            responseHttpStatus: 200,
+            responsePagePath: "/index.html",
+          },
+        ],
+      },
+    );
+
+    new s3deploy.BucketDeployment(this, "DeployFrontend", {
+      sources: [s3deploy.Source.asset("../frontend/dist")],
+      destinationBucket: frontendBucket,
+      distribution: frontendDistribution,
+      distributionPaths: ["/*"],
+    });
+
+    new cdk.CfnOutput(this, "FrontendURL", {
+      value: `https://${frontendDistribution.distributionDomainName}`,
+    });
 
     // DynamoDB Tables
     const productsTable = new dynamodb.Table(this, "ProductsTable", {
@@ -86,7 +133,7 @@ export class InfraStack extends cdk.Stack {
         environment: {
           BUCKET_NAME: productImagesBucket.bucketName,
           TABLE_NAME: productsTable.tableName,
-          CLOUDFRONT_DOMAIN: distribution.distributionDomainName,
+          CLOUDFRONT_DOMAIN: productImagesDistribution.distributionDomainName,
         },
       },
     );
@@ -192,8 +239,14 @@ export class InfraStack extends cdk.Stack {
           cognito.OAuthScope.EMAIL,
           cognito.OAuthScope.PROFILE,
         ],
-        callbackUrls: ["http://localhost:3000"],
-        logoutUrls: ["http://localhost:3000"],
+        callbackUrls: [
+          "http://localhost:3000",
+          `https://${frontendDistribution.distributionDomainName}`,
+        ],
+        logoutUrls: [
+          "http://localhost:3000",
+          `https://${frontendDistribution.distributionDomainName}`,
+        ],
       },
 
       supportedIdentityProviders: [

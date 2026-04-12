@@ -4,7 +4,7 @@ import { useAuth } from 'react-oidc-context'
 
 const COGNITO_DOMAIN = import.meta.env.VITE_COGNITO_DOMAIN
 const CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID
-const LOGOUT_URI = import.meta.env.VITE_COGNITO_LOGOUT_URI
+const LOGOUT_URI = window.location.origin
 
 export default function Header() {
   const auth = useAuth()
