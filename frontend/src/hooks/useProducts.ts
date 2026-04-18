@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createProduct, fetchProducts } from '@/api/products'
+import { createProduct, fetchProducts, updateProduct } from '@/api/products'
 import { useAuth } from 'react-oidc-context'
-import type { CreateProductInput } from '@/types'
+import type { CreateProductInput, Product } from '@/types'
 
 export const productKeys = {
   all: ['products'] as const,
@@ -26,6 +26,28 @@ export const useCreateProduct = () => {
     },
     onError: (error) => {
       console.error('Error creating product: ', error)
+    },
+  })
+}
+
+export const useUpdateProduct = () => {
+  const auth = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Product> }) => {
+      const token = auth.user?.id_token
+      if (!token) {
+        throw new Error('User not authenticated')
+      }
+      return updateProduct(id, data, token)
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: productKeys.all })
+      console.log('Product updated successfully: ', data)
+    },
+    onError: (error) => {
+      console.error('Error updating product: ', error)
     },
   })
 }

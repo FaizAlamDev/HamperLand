@@ -20,6 +20,26 @@ export const createProduct = async (
   return response.json()
 }
 
+export const updateProduct = async (
+  productId: string,
+  payload: Partial<Product>,
+  token: string,
+) => {
+  const response = await fetch(`${API_URL}/${productId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to update product')
+  }
+  return response.json()
+}
+
 export const fetchProducts = async (): Promise<Product[]> => {
   const response = await fetch(API_URL)
   if (!response.ok) {

@@ -147,6 +147,19 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
+    const updateProductLambda = new lambda.Function(
+      this,
+      "UpdateProductHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        code: lambda.Code.fromAsset("lambda"),
+        handler: "update-product.handler",
+        environment: {
+          TABLE_NAME: productsTable.tableName,
+        },
+      },
+    );
+
     const createOrderLambda = new lambda.Function(this, "CreateOrderHandler", {
       runtime: lambda.Runtime.NODEJS_22_X,
       code: lambda.Code.fromAsset("lambda"),
@@ -168,6 +181,7 @@ export class InfraStack extends cdk.Stack {
     // Permissions
     productsTable.grantWriteData(createProductLambda);
     productsTable.grantReadData(getProductsLambda);
+    productsTable.grantWriteData(updateProductLambda);
     productImagesBucket.grantPut(createProductLambda);
     ordersTable.grantWriteData(createOrderLambda);
     ordersTable.grantReadData(getOrderLambda);
@@ -299,6 +313,15 @@ export class InfraStack extends cdk.Stack {
     productsResource.addMethod(
       "GET",
       new apigateway.LambdaIntegration(getProductsLambda),
+    );
+    const productById = productsResource.addResource("{id}");
+    productById.addMethod(
+      "PUT",
+      new apigateway.LambdaIntegration(updateProductLambda),
+      {
+        authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      },
     );
 
     const ordersResource = api.root.addResource("orders");
