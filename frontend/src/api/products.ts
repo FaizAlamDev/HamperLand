@@ -40,6 +40,20 @@ export const updateProduct = async (
   return response.json()
 }
 
+export const deleteProduct = async (productId: string, token: string) => {
+  const response = await fetch(`${API_URL}/${productId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Failed to delete product')
+  }
+  return response.json()
+}
+
 export const fetchProducts = async (): Promise<Product[]> => {
   const response = await fetch(API_URL)
   if (!response.ok) {

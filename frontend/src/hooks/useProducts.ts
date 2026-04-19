@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createProduct, fetchProducts, updateProduct } from '@/api/products'
+import {
+  createProduct,
+  deleteProduct,
+  fetchProducts,
+  updateProduct,
+} from '@/api/products'
 import { useAuth } from 'react-oidc-context'
 import type { CreateProductInput, Product } from '@/types'
 
@@ -48,6 +53,28 @@ export const useUpdateProduct = () => {
     },
     onError: (error) => {
       console.error('Error updating product: ', error)
+    },
+  })
+}
+
+export const useDeleteProduct = () => {
+  const auth = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (productId: string) => {
+      const token = auth.user?.id_token
+      if (!token) {
+        throw new Error('User not authenticated')
+      }
+      return deleteProduct(productId, token)
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: productKeys.all })
+      console.log('Product deleted successfully: ', data)
+    },
+    onError: (error) => {
+      console.error('Error deleting product: ', error)
     },
   })
 }
