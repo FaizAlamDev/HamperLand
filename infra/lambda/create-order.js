@@ -51,6 +51,7 @@ exports.handler = async (event) => {
       orderStatus: "PLACED",
       totals: body.totals,
       createdAt: timestamp,
+      updatedAt: timestamp,
     };
 
     const command = new PutCommand({

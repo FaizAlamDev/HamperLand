@@ -182,10 +182,28 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
+    const getOrdersLambda = new lambda.Function(this, "GetOrdersHandler", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      code: lambda.Code.fromAsset("lambda"),
+      handler: "get-orders.handler",
+      environment: {
+        TABLE_NAME: ordersTable.tableName,
+      },
+    });
+
     const getOrderLambda = new lambda.Function(this, "GetOrderHandler", {
       runtime: lambda.Runtime.NODEJS_22_X,
       code: lambda.Code.fromAsset("lambda"),
       handler: "get-order.handler",
+      environment: {
+        TABLE_NAME: ordersTable.tableName,
+      },
+    });
+
+    const updateOrderLambda = new lambda.Function(this, "UpdateOrderHandler", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      code: lambda.Code.fromAsset("lambda"),
+      handler: "update-order.handler",
       environment: {
         TABLE_NAME: ordersTable.tableName,
       },
@@ -196,9 +214,13 @@ export class InfraStack extends cdk.Stack {
     productsTable.grantReadData(getProductsLambda);
     productsTable.grantWriteData(updateProductLambda);
     productsTable.grantWriteData(deleteProductLambda);
+
     productImagesBucket.grantPut(createProductLambda);
+
     ordersTable.grantWriteData(createOrderLambda);
     ordersTable.grantReadData(getOrderLambda);
+    ordersTable.grantReadData(getOrdersLambda);
+    ordersTable.grantWriteData(updateOrderLambda);
 
     // COGNITO USER POOL
     const userPool = new cognito.UserPool(this, "UserPool", {
@@ -356,10 +378,27 @@ export class InfraStack extends cdk.Stack {
       },
     );
 
+    ordersResource.addMethod(
+      "GET",
+      new apigateway.LambdaIntegration(getOrdersLambda),
+      {
+        authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      },
+    );
+
     const singleOrderResource = ordersResource.addResource("{id}");
     singleOrderResource.addMethod(
       "GET",
       new apigateway.LambdaIntegration(getOrderLambda),
+      {
+        authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      },
+    );
+    singleOrderResource.addMethod(
+      "PUT",
+      new apigateway.LambdaIntegration(updateOrderLambda),
       {
         authorizer,
         authorizationType: apigateway.AuthorizationType.COGNITO,
