@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import useCartStore from '@/store/useCartStore'
-import { type FormError } from '@/types'
+import { type FormError, type IndianState, type PaymentMethod } from '@/types'
 import OrderSummary from '@/components/OrderSummary'
 import CheckoutForm from '@/components/CheckoutForm'
 import ErrorList from '@/components/ErrorList'
@@ -31,7 +31,7 @@ function CheckoutRoute() {
   const [city, setCity] = useState('')
   const [stateText, setStateText] = useState('')
   const [pincode, setPincode] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi'>('cod')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD')
 
   const navigate = useNavigate()
 
@@ -64,7 +64,7 @@ function CheckoutRoute() {
     const trimmedPhone = phone.trim()
     const trimmedAddress = address.trim()
     const trimmedCity = city.trim()
-    const trimmedState = stateText.trim()
+    const trimmedState = stateText.trim() as IndianState
     const trimmedPincode = pincode.trim()
 
     if (!trimmedName) {

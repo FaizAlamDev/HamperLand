@@ -1,4 +1,4 @@
-import { INDIAN_STATES } from '@/types'
+import { INDIAN_STATES, type PaymentMethod } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import {
@@ -24,8 +24,8 @@ interface CheckoutFormProps {
   setStateText: (v: string) => void
   pincode: string
   setPincode: (v: string) => void
-  paymentMethod: 'cod' | 'upi'
-  setPaymentMethod: (v: 'cod' | 'upi') => void
+  paymentMethod: PaymentMethod
+  setPaymentMethod: (v: PaymentMethod) => void
 }
 
 export default function CheckoutForm({
@@ -108,15 +108,15 @@ export default function CheckoutForm({
         <CardContent className="space-y-3">
           <RadioGroup
             value={paymentMethod}
-            onValueChange={(v) => setPaymentMethod(v as 'cod' | 'upi')}
+            onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
           >
             <div className="flex items-center gap-3">
-              <RadioGroupItem value="cod" id="pm-cod" />
+              <RadioGroupItem value="COD" id="pm-cod" />
               <label htmlFor="pm-cod">Cash on Delivery (COD)</label>
             </div>
 
             <div className="flex items-center gap-3">
-              <RadioGroupItem value="upi" id="pm-upi" />
+              <RadioGroupItem value="UPI" id="pm-upi" />
               <label htmlFor="pm-upi">UPI</label>
             </div>
           </RadioGroup>

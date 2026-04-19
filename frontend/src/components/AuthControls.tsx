@@ -62,6 +62,10 @@ export function AuthControls({
             <DropdownMenuItem asChild>
               <Link to="/admin/listProducts">Edit Products</Link>
             </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link to="/admin/orders">View Orders</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}

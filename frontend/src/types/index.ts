@@ -27,11 +27,61 @@ export type CartState = {
   getTotalPrice: () => number
 }
 
+export type OrderStatus =
+  | 'PLACED'
+  | 'CONFIRMED'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+
+export type PaymentStatus = 'PENDING' | 'PAID'
+
+export type PaymentMethod = 'COD' | 'UPI'
+
+export type ShippingAddress = {
+  name: string
+  phone: string
+  address: string
+  city: string
+  state: IndianState
+  pincode: string
+}
+
+export type OrderTotals = {
+  totalItems: number
+  totalPrice: number
+  total?: number
+}
+
+export type OrderItem = {
+  productId: string
+  name: string
+  image: string
+  price: number
+  qty: number
+}
+
 export type Order = {
-  items: Omit<CartItem, 'description' | 'countInStock'>[]
-  shippingAddress: any
-  paymentMethod: 'cod' | 'upi'
-  totals: any
+  orderId: string
+  userId: string
+  items: OrderItem[]
+  shippingAddress: ShippingAddress
+
+  paymentMethod: PaymentMethod
+  paymentStatus: PaymentStatus
+
+  orderStatus: OrderStatus
+
+  totals: OrderTotals
+
+  createdAt: string
+  updatedAt: string
+}
+
+export type CreateOrderInput = {
+  items: OrderItem[]
+  shippingAddress: ShippingAddress
+  paymentMethod: PaymentMethod
 }
 
 export const INDIAN_STATES = [
