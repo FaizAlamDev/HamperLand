@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
+import { Link } from '@tanstack/react-router'
 
 type Props = {
   auth: ReturnType<typeof useAuth>
@@ -20,6 +21,9 @@ export function AuthControls({
   size = 'desktop',
 }: Props) {
   const user = auth.user?.profile
+
+  const groups = auth.user?.profile['cognito:groups'] as string[]
+  const isAdmin = groups?.includes('admin')
 
   const isMobile = size === 'mobile'
 
@@ -44,6 +48,23 @@ export function AuthControls({
 
   return (
     <>
+      {isAdmin && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={buttonClass}>Admin</button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem asChild>
+              <Link to="/admin/createProduct">Create Product</Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link to="/admin/listProducts">Edit Products</Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className={buttonClass}>

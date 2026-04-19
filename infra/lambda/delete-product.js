@@ -17,8 +17,6 @@ exports.handler = async (event) => {
   };
 
   try {
-    console.log("EVENT:", JSON.stringify(event));
-
     const claims = event.requestContext?.authorizer?.claims;
     if (!claims) {
       return {
