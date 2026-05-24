@@ -220,6 +220,7 @@ export class InfraStack extends cdk.Stack {
     ordersTable.grantWriteData(createOrderLambda);
     ordersTable.grantReadData(getOrderLambda);
     ordersTable.grantReadData(getOrdersLambda);
+    ordersTable.grantReadData(updateOrderLambda);
     ordersTable.grantWriteData(updateOrderLambda);
 
     // COGNITO USER POOL

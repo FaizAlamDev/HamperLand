@@ -69,7 +69,7 @@ exports.handler = async (event) => {
 
     const { orderStatus, paymentStatus } = body;
 
-    const existingOrderResult = await client.send(
+    const existingOrderResult = await ddbDocClient.send(
       new GetCommand({
         TableName: process.env.TABLE_NAME,
         Key: { orderId },
@@ -90,7 +90,10 @@ exports.handler = async (event) => {
     const values = {};
     const names = {};
 
-    if (orderStatus !== undefined) {
+    if (
+      orderStatus !== undefined &&
+      orderStatus !== existingOrder.orderStatus
+    ) {
       if (!ALLOWED_ORDER_STATUS.includes(orderStatus)) {
         return {
           statusCode: 400,
@@ -118,7 +121,10 @@ exports.handler = async (event) => {
       values[":orderStatus"] = orderStatus;
     }
 
-    if (paymentStatus !== undefined) {
+    if (
+      paymentStatus !== undefined &&
+      paymentStatus !== existingOrder.paymentStatus
+    ) {
       if (!ALLOWED_PAYMENT_STATUS.includes(paymentStatus)) {
         return {
           statusCode: 400,
