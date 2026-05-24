@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createOrder, getOrder, getOrders, updateOrder } from '@/api/orders'
 import type { CreateOrderInput } from '@/types'
 import { useAuth } from 'react-oidc-context'
@@ -58,6 +58,7 @@ export const useOrders = () => {
 
 export const useUpdateOrder = () => {
   const auth = useAuth()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({ orderId, data }: { orderId: string; data: any }) => {
@@ -69,6 +70,9 @@ export const useUpdateOrder = () => {
     },
     onSuccess: (data) => {
       console.log('Order updated successfully:', data)
+      queryClient.invalidateQueries({
+        queryKey: ['orders'],
+      })
     },
     onError: (error) => {
       console.error('Error updating order:', error)

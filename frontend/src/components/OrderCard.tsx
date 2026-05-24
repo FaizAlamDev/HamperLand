@@ -1,3 +1,7 @@
+import {
+  ORDER_STATUS_TRANSITIONS,
+  PAYMENT_STATUS_TRANSITIONS,
+} from '@/constants/orderTransitions'
 import { useUpdateOrder } from '@/hooks/useOrders'
 import type { Order, OrderStatus, PaymentStatus } from '@/types'
 import { useState } from 'react'
@@ -11,6 +15,10 @@ export default function OrderCard({ order }: { order: Order }) {
   const { mutateAsync, isPending } = useUpdateOrder()
 
   const isCOD = order.paymentMethod === 'COD'
+
+  const allowedOrderTransitions = ORDER_STATUS_TRANSITIONS[order.orderStatus]
+  const allowedPaymentTransitions =
+    PAYMENT_STATUS_TRANSITIONS[order.paymentStatus]
 
   const handleSave = async () => {
     await mutateAsync({
@@ -58,11 +66,13 @@ export default function OrderCard({ order }: { order: Order }) {
           }
           className="border px-2 py-1 rounded"
         >
-          <option>PLACED</option>
-          <option>CONFIRMED</option>
-          <option>SHIPPED</option>
-          <option>DELIVERED</option>
-          <option>CANCELLED</option>
+          <option value={order.orderStatus}>{order.orderStatus}</option>
+
+          {allowedOrderTransitions.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
         </select>
 
         {isCOD && (
@@ -76,8 +86,13 @@ export default function OrderCard({ order }: { order: Order }) {
             }
             className="border px-2 py-1 rounded"
           >
-            <option value="PENDING">PENDING</option>
-            <option value="PAID">PAID</option>
+            <option value={order.paymentStatus}>{order.paymentStatus}</option>
+
+            {allowedPaymentTransitions.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
           </select>
         )}
       </div>
@@ -91,15 +106,16 @@ export default function OrderCard({ order }: { order: Order }) {
           {isPending ? 'Saving...' : 'Save'}
         </button>
 
-        {order.orderStatus !== 'CANCELLED' && (
-          <button
-            onClick={handleCancel}
-            disabled={isPending}
-            className="px-3 py-2 bg-red-600 text-white rounded"
-          >
-            Cancel Order
-          </button>
-        )}
+        {order.orderStatus !== 'CANCELLED' &&
+          order.orderStatus !== 'DELIVERED' && (
+            <button
+              onClick={handleCancel}
+              disabled={isPending}
+              className="px-3 py-2 bg-red-600 text-white rounded"
+            >
+              Cancel Order
+            </button>
+          )}
       </div>
     </div>
   )
