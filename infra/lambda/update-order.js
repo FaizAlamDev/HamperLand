@@ -2,6 +2,7 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
   UpdateCommand,
+  GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 const TABLE = process.env.TABLE_NAME;
@@ -23,6 +24,19 @@ const ALLOWED_ORDER_STATUS = [
 ];
 
 const ALLOWED_PAYMENT_STATUS = ["PENDING", "PAID"];
+
+const ORDER_STATUS_TRANSITIONS = {
+  PLACED: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["SHIPPED", "CANCELLED"],
+  SHIPPED: ["DELIVERED"],
+  DELIVERED: [],
+  CANCELLED: [],
+};
+
+const PAYMENT_STATUS_TRANSITIONS = {
+  PENDING: ["PAID"],
+  PAID: [],
+};
 
 exports.handler = async (event) => {
   try {
@@ -55,6 +69,23 @@ exports.handler = async (event) => {
 
     const { orderStatus, paymentStatus } = body;
 
+    const existingOrderResult = await client.send(
+      new GetCommand({
+        TableName: process.env.TABLE_NAME,
+        Key: { orderId },
+      }),
+    );
+
+    const existingOrder = existingOrderResult.Item;
+
+    if (!existingOrder) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ message: "Order not found" }),
+      };
+    }
+
     const updates = [];
     const values = {};
     const names = {};
@@ -65,6 +96,20 @@ exports.handler = async (event) => {
           statusCode: 400,
           headers,
           body: JSON.stringify({ message: "Invalid orderStatus" }),
+        };
+      }
+
+      const currentStatus = existingOrder.orderStatus;
+
+      const allowedTransitions = ORDER_STATUS_TRANSITIONS[currentStatus];
+
+      if (!allowedTransitions.includes(orderStatus)) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            message: `Cannot transition order from ${currentStatus} to ${orderStatus}`,
+          }),
         };
       }
 
@@ -79,6 +124,31 @@ exports.handler = async (event) => {
           statusCode: 400,
           headers,
           body: JSON.stringify({ message: "Invalid paymentStatus" }),
+        };
+      }
+
+      const currentPaymentStatus = existingOrder.paymentStatus;
+
+      const allowedTransitions =
+        PAYMENT_STATUS_TRANSITIONS[currentPaymentStatus];
+
+      if (!allowedTransitions.includes(paymentStatus)) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            message: `Cannot transition payment from ${currentPaymentStatus} to ${paymentStatus}`,
+          }),
+        };
+      }
+
+      if (existingOrder.paymentMethod !== "COD") {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            message: "Manual payment updates allowed only for COD",
+          }),
         };
       }
 
