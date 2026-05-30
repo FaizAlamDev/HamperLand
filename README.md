@@ -10,9 +10,10 @@ It supports product browsing, cart + checkout flow, authentication via Cognito (
 - Product listing and details
 - Cart and checkout flow
 - Order creation and success page
-- Admin product creation
+- Admin product create, update and delete
 - Authentication via Cognito (Google + email/password)
 - Protected admin routes (`admin` group required)
+- Automated CI/CD with GitHub Actions, AWS IAM Roles, and OIDC-based authentication
 
 ---
 
@@ -34,6 +35,9 @@ It supports product browsing, cart + checkout flow, authentication via Cognito (
 - API Gateway (Cognito authorizer)
 - Cognito (auth + groups)
 - DynamoDB (products, orders)
+- GitHub Actions (CI/CD)
+- AWS IAM
+- OpenID Connect (OIDC)
 
 ---
 
@@ -96,7 +100,8 @@ This:
 - Builds frontend
 - Deploys CDK stack
 - Uploads assets to S3
-- Serves via CloudFront
+- Invalidates CloudFront cache
+- Serves the application through CloudFront
 
 ---
 
@@ -141,6 +146,8 @@ infra/
 - `/checkout`
 - `/order-success/:orderId`
 - `/admin/createProduct` (protected)
+- `/admin/listProducts` (protected)
+- `/admin/orders` (protected)
 
 ---
 
@@ -151,6 +158,8 @@ infra/
 
 - Admin users (Cognito group: `admin`):
   - Create products
+  - Update products
+  - Delete products
 
 ---
 
@@ -163,6 +172,35 @@ pnpm deploy
 ```
 
 ---
+
+## CI/CD
+
+GitHub Actions is used to automate validation and deployment.
+
+### Continuous Integration
+
+On pull requests:
+
+- Install dependencies
+- Typecheck frontend
+- Build the frontend
+
+### Continuous Deployment
+
+On merges to the main branch:
+
+- Install dependencies
+- Configure AWS Credentials
+- Build frontend assets
+- Deploy AWS infrastructure using CDK
+- Upload frontend assets to S3
+- Update CloudFront-served application
+
+### Authentication
+
+Deployments authenticate to AWS using GitHub OIDC and an IAM role configured for GitHub Actions.
+
+This eliminates the need to store long-lived AWS access keys as GitHub secrets and allows deployments to assume temporary AWS credentials through OpenID Connect.
 
 ## License
 
