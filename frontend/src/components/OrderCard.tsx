@@ -5,6 +5,8 @@ import {
 import { useUpdateOrder } from '@/hooks/useOrders'
 import type { Order, OrderStatus, PaymentStatus } from '@/types'
 import { useState } from 'react'
+import OrderStatusBadge from './OrderStatusBadge'
+import PaymentStatusBadge from './PaymentStatusBadge'
 
 export default function OrderCard({ order }: { order: Order }) {
   const [form, setForm] = useState({
@@ -35,24 +37,78 @@ export default function OrderCard({ order }: { order: Order }) {
   }
 
   return (
-    <div className="border rounded p-4 space-y-3">
-      <div className="flex justify-between">
+    <div className="border rounded-lg p-4 space-y-4 bg-white">
+      <div className="flex items-start justify-between">
         <div>
-          <p className="font-semibold">Order #{order.orderId}</p>
+          <p className="font-semibold text-lg">Order #{order.orderId}</p>
           <p className="text-sm text-gray-500">
             {new Date(order.createdAt).toLocaleString()}
           </p>
         </div>
 
-        <div className="text-sm text-gray-600">₹{order.totals?.totalPrice}</div>
+        <div className="text-right">
+          <p className="font-semibold text-lg">₹{order.totals.totalPrice}</p>
+
+          <p className="text-sm text-gray-500">
+            {order.totals.totalItems} item(s)
+          </p>
+        </div>
       </div>
 
-      <div className="text-sm">
-        {order.items.map((item) => (
-          <div key={item.productId}>
-            {item.name} × {item.qty}
-          </div>
-        ))}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-gray-500">
+            Customer
+          </p>
+
+          <p className="font-medium">{order.customer.name}</p>
+
+          <p className="text-sm text-gray-600">{order.customer.email}</p>
+
+          <p className="text-sm text-gray-600">{order.shippingAddress.phone}</p>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-wide text-gray-500">
+            Shipping Address
+          </p>
+
+          <p className="text-sm">{order.shippingAddress.address}</p>
+
+          <p className="text-sm">
+            {order.shippingAddress.city}, {order.shippingAddress.state}
+          </p>
+
+          <p className="text-sm">{order.shippingAddress.pincode}</p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        <OrderStatusBadge status={order.orderStatus} />
+
+        <PaymentStatusBadge status={order.paymentStatus} />
+
+        <span className="px-2 py-1 rounded-full bg-gray-100 text-xs">
+          {order.paymentMethod}
+        </span>
+      </div>
+
+      <div>
+        <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">
+          Items
+        </p>
+
+        <div className="space-y-2">
+          {order.items.map((item) => (
+            <div key={item.productId} className="flex justify-between text-sm">
+              <span>
+                {item.name} × {item.qty}
+              </span>
+
+              <span>₹{item.price * item.qty}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex gap-4 flex-wrap">

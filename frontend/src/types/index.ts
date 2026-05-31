@@ -61,9 +61,16 @@ export type OrderItem = {
   qty: number
 }
 
+export type Customer = {
+  userId: string
+  name: string
+  email: string
+}
+
 export type Order = {
   orderId: string
   userId: string
+  customer: Customer
   items: OrderItem[]
   shippingAddress: ShippingAddress
 
