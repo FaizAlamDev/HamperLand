@@ -26,10 +26,6 @@ export class InfraStack extends cdk.Stack {
     const googleClientSecret = requiredEnv("GOOGLE_CLIENT_SECRET");
     const fromEmail = requiredEnv("FROM_EMAIL");
 
-    if (!googleClientId || !googleClientSecret || !fromEmail) {
-      throw new Error("Some Environment Variables are missing");
-    }
-
     // S3 Bucket for Product Images
     const productImagesBucket = new s3.Bucket(this, "ProductImagesBucket", {
       versioned: false,
