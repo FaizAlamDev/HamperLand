@@ -15,10 +15,20 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as sns from "aws-cdk-lib/aws-sns";
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 import * as sqs from "aws-cdk-lib/aws-sqs";
+import requiredEnv from "./env";
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // validate env vars
+    const googleClientId = requiredEnv("GOOGLE_CLIENT_ID");
+    const googleClientSecret = requiredEnv("GOOGLE_CLIENT_SECRET");
+    const fromEmail = requiredEnv("FROM_EMAIL");
+
+    if (!googleClientId || !googleClientSecret || !fromEmail) {
+      throw new Error("Some Environment Variables are missing");
+    }
 
     // S3 Bucket for Product Images
     const productImagesBucket = new s3.Bucket(this, "ProductImagesBucket", {
@@ -241,7 +251,7 @@ export class InfraStack extends cdk.Stack {
         deadLetterQueueEnabled: true,
         environment: {
           FRONTEND_URL: `https://${frontendDistribution.distributionDomainName}`,
-          FROM_EMAIL: process.env.FROM_EMAIL!,
+          FROM_EMAIL: fromEmail,
         },
       },
     );
@@ -310,10 +320,8 @@ export class InfraStack extends cdk.Stack {
       this,
       "Google",
       {
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecretValue: cdk.SecretValue.unsafePlainText(
-          process.env.GOOGLE_CLIENT_SECRET!,
-        ),
+        clientId: googleClientId,
+        clientSecretValue: cdk.SecretValue.unsafePlainText(googleClientSecret),
         userPool,
         scopes: ["openid", "email", "profile"],
         attributeMapping: {
