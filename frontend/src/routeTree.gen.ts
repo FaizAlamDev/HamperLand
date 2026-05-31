@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MyOrdersRouteImport } from './routes/my-orders'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -22,6 +23,11 @@ import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminListProductsRouteImport } from './routes/admin/listProducts'
 import { Route as AdminCreateProductRouteImport } from './routes/admin/createProduct'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyOrdersRoute = MyOrdersRouteImport.update({
   id: '/my-orders',
   path: '/my-orders',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/my-orders': typeof MyOrdersRoute
+  '/profile': typeof ProfileRoute
   '/admin/createProduct': typeof AdminCreateProductRoute
   '/admin/listProducts': typeof AdminListProductsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/my-orders': typeof MyOrdersRoute
+  '/profile': typeof ProfileRoute
   '/admin/createProduct': typeof AdminCreateProductRoute
   '/admin/listProducts': typeof AdminListProductsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/my-orders': typeof MyOrdersRoute
+  '/profile': typeof ProfileRoute
   '/admin/createProduct': typeof AdminCreateProductRoute
   '/admin/listProducts': typeof AdminListProductsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/my-orders'
+    | '/profile'
     | '/admin/createProduct'
     | '/admin/listProducts'
     | '/admin/orders'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/my-orders'
+    | '/profile'
     | '/admin/createProduct'
     | '/admin/listProducts'
     | '/admin/orders'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/my-orders'
+    | '/profile'
     | '/admin/createProduct'
     | '/admin/listProducts'
     | '/admin/orders'
@@ -178,6 +190,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   LoginRoute: typeof LoginRoute
   MyOrdersRoute: typeof MyOrdersRoute
+  ProfileRoute: typeof ProfileRoute
   AdminCreateProductRoute: typeof AdminCreateProductRoute
   AdminListProductsRoute: typeof AdminListProductsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -188,6 +201,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-orders': {
       id: '/my-orders'
       path: '/my-orders'
@@ -282,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   LoginRoute: LoginRoute,
   MyOrdersRoute: MyOrdersRoute,
+  ProfileRoute: ProfileRoute,
   AdminCreateProductRoute: AdminCreateProductRoute,
   AdminListProductsRoute: AdminListProductsRoute,
   AdminOrdersRoute: AdminOrdersRoute,

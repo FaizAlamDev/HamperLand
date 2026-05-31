@@ -86,6 +86,9 @@ export function AuthControls({
           <DropdownMenuItem>
             <Link to="/my-orders">My Orders</Link>
           </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/profile">My Profile</Link>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
