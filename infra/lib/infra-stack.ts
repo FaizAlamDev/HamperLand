@@ -209,6 +209,15 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
+    const getMyOrdersLambda = new lambda.Function(this, "GetMyOrdersHandler", {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      code: lambda.Code.fromAsset("lambda"),
+      handler: "get-my-orders.handler",
+      environment: {
+        TABLE_NAME: ordersTable.tableName,
+      },
+    });
+
     // Permissions
     productsTable.grantWriteData(createProductLambda);
     productsTable.grantReadData(getProductsLambda);
@@ -222,6 +231,7 @@ export class InfraStack extends cdk.Stack {
     ordersTable.grantReadData(getOrdersLambda);
     ordersTable.grantReadData(updateOrderLambda);
     ordersTable.grantWriteData(updateOrderLambda);
+    ordersTable.grantReadData(getMyOrdersLambda);
 
     // COGNITO USER POOL
     const userPool = new cognito.UserPool(this, "UserPool", {
@@ -400,6 +410,16 @@ export class InfraStack extends cdk.Stack {
     singleOrderResource.addMethod(
       "PUT",
       new apigateway.LambdaIntegration(updateOrderLambda),
+      {
+        authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      },
+    );
+
+    const myOrdersResource = ordersResource.addResource("my");
+    myOrdersResource.addMethod(
+      "GET",
+      new apigateway.LambdaIntegration(getMyOrdersLambda),
       {
         authorizer,
         authorizationType: apigateway.AuthorizationType.COGNITO,

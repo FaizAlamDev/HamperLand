@@ -9,17 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MyOrdersRouteImport } from './routes/my-orders'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as OrderSuccessOrderIdRouteImport } from './routes/order-success.$orderId'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminListProductsRouteImport } from './routes/admin/listProducts'
 import { Route as AdminCreateProductRouteImport } from './routes/admin/createProduct'
 
+const MyOrdersRoute = MyOrdersRouteImport.update({
+  id: '/my-orders',
+  path: '/my-orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -50,6 +57,11 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrderSuccessOrderIdRoute = OrderSuccessOrderIdRouteImport.update({
   id: '/order-success/$orderId',
   path: '/order-success/$orderId',
@@ -77,10 +89,12 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/my-orders': typeof MyOrdersRoute
   '/admin/createProduct': typeof AdminCreateProductRoute
   '/admin/listProducts': typeof AdminListProductsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/order-success/$orderId': typeof OrderSuccessOrderIdRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$id': typeof ProductIdRoute
 }
 export interface FileRoutesByTo {
@@ -89,10 +103,12 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/my-orders': typeof MyOrdersRoute
   '/admin/createProduct': typeof AdminCreateProductRoute
   '/admin/listProducts': typeof AdminListProductsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/order-success/$orderId': typeof OrderSuccessOrderIdRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$id': typeof ProductIdRoute
 }
 export interface FileRoutesById {
@@ -102,10 +118,12 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/my-orders': typeof MyOrdersRoute
   '/admin/createProduct': typeof AdminCreateProductRoute
   '/admin/listProducts': typeof AdminListProductsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/order-success/$orderId': typeof OrderSuccessOrderIdRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$id': typeof ProductIdRoute
 }
 export interface FileRouteTypes {
@@ -116,10 +134,12 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/login'
+    | '/my-orders'
     | '/admin/createProduct'
     | '/admin/listProducts'
     | '/admin/orders'
     | '/order-success/$orderId'
+    | '/orders/$orderId'
     | '/product/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -128,10 +148,12 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/login'
+    | '/my-orders'
     | '/admin/createProduct'
     | '/admin/listProducts'
     | '/admin/orders'
     | '/order-success/$orderId'
+    | '/orders/$orderId'
     | '/product/$id'
   id:
     | '__root__'
@@ -140,10 +162,12 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/login'
+    | '/my-orders'
     | '/admin/createProduct'
     | '/admin/listProducts'
     | '/admin/orders'
     | '/order-success/$orderId'
+    | '/orders/$orderId'
     | '/product/$id'
   fileRoutesById: FileRoutesById
 }
@@ -153,15 +177,24 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   LoginRoute: typeof LoginRoute
+  MyOrdersRoute: typeof MyOrdersRoute
   AdminCreateProductRoute: typeof AdminCreateProductRoute
   AdminListProductsRoute: typeof AdminListProductsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   OrderSuccessOrderIdRoute: typeof OrderSuccessOrderIdRoute
+  OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   ProductIdRoute: typeof ProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/my-orders': {
+      id: '/my-orders'
+      path: '/my-orders'
+      fullPath: '/my-orders'
+      preLoaderRoute: typeof MyOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -204,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders/$orderId': {
+      id: '/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof OrdersOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order-success/$orderId': {
       id: '/order-success/$orderId'
       path: '/order-success/$orderId'
@@ -241,10 +281,12 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   LoginRoute: LoginRoute,
+  MyOrdersRoute: MyOrdersRoute,
   AdminCreateProductRoute: AdminCreateProductRoute,
   AdminListProductsRoute: AdminListProductsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   OrderSuccessOrderIdRoute: OrderSuccessOrderIdRoute,
+  OrdersOrderIdRoute: OrdersOrderIdRoute,
   ProductIdRoute: ProductIdRoute,
 }
 export const routeTree = rootRouteImport

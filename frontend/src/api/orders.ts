@@ -32,6 +32,18 @@ export const getOrder = async (orderId: string, token: string) => {
   return response.json()
 }
 
+export const getMyOrders = async (token: string) => {
+  const response = await fetch(`${API_URL}/my`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error('My Orders not found')
+  }
+  return response.json()
+}
+
 export const getOrders = async (token: string) => {
   const response = await fetch(`${API_URL}`, {
     headers: {

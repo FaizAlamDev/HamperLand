@@ -83,7 +83,9 @@ export function AuthControls({
             <p className="text-sm font-medium">{user?.name || 'User'}</p>
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
-
+          <DropdownMenuItem>
+            <Link to="/my-orders">My Orders</Link>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
