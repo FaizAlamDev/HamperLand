@@ -1,5 +1,7 @@
 import type { Order } from '@/types'
 import { Link } from '@tanstack/react-router'
+import OrderStatusBadge from './OrderStatusBadge'
+import PaymentStatusBadge from './PaymentStatusBadge'
 
 export default function MyOrderCard({ order }: { order: Order }) {
   return (
@@ -21,12 +23,14 @@ export default function MyOrderCard({ order }: { order: Order }) {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
-        <div>
+        <div className="flex items-center gap-2">
           <span className="font-medium">Status:</span> {order.orderStatus}
+          <OrderStatusBadge status={order.orderStatus} />
         </div>
 
-        <div>
+        <div className="flex items-center gap-2">
           <span className="font-medium">Payment:</span> {order.paymentStatus}
+          <PaymentStatusBadge status={order.paymentStatus} />
         </div>
 
         <div>

@@ -1,3 +1,6 @@
+import OrderProgress from '@/components/OrderProgress'
+import OrderStatusBadge from '@/components/OrderStatusBadge'
+import PaymentStatusBadge from '@/components/PaymentStatusBadge'
 import { useOrder } from '@/hooks/useOrders'
 import type { OrderItem } from '@/types'
 import { createFileRoute, redirect } from '@tanstack/react-router'
@@ -33,16 +36,24 @@ function OrderDetailsPage() {
       </div>
 
       <div className="border rounded-lg p-4">
+        <h2 className="font-semibold mb-4">Order Progress</h2>
+
+        <OrderProgress status={data.orderStatus} />
+      </div>
+
+      <div className="border rounded-lg p-4">
         <h2 className="font-semibold mb-3">Order Status</h2>
 
         <div className="space-y-2">
-          <p>
+          <div className="flex items-center gap-2">
             <span className="font-medium">Status:</span> {data.orderStatus}
-          </p>
+            <OrderStatusBadge status={data.orderStatus} />
+          </div>
 
-          <p>
+          <div className="flex items-center gap-2">
             <span className="font-medium">Payment:</span> {data.paymentStatus}
-          </p>
+            <PaymentStatusBadge status={data.paymentStatus} />
+          </div>
 
           <p>
             <span className="font-medium">Method:</span> {data.paymentMethod}
