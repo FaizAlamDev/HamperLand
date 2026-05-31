@@ -39,15 +39,17 @@ exports.handler = async (event) => {
         body: JSON.stringify({ message: "Unauthorized" }),
       };
     }
+
+    const userId = claims.sub;
     const customer = {
-      userId: claims.sub,
+      userId,
       name: claims.name ?? "",
       email: claims.email ?? "",
     };
 
     const order = {
       orderId,
-      userId: customer.userId,
+      userId,
       customer,
       items: body.items,
       shippingAddress: body.shippingAddress,
