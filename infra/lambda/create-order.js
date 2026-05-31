@@ -1,5 +1,6 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
+const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
 const crypto = require("crypto");
 
 const ddbClient = new DynamoDBClient({});
@@ -68,7 +69,21 @@ exports.handler = async (event) => {
 
     await ddbDocClient.send(command);
 
-    console.log("Creating order for user:", userId);
+    const sns = new SNSClient({});
+    await sns.send(
+      new PublishCommand({
+        TopicArn: process.env.ORDER_CREATED_TOPIC_ARN,
+        Message: JSON.stringify({
+          eventType: "ORDER_CREATED",
+          orderId,
+          customer,
+          totals: body.totals,
+          paymentMethod: body.paymentMethod,
+          createdAt: timestamp,
+        }),
+      }),
+    );
+
     return {
       statusCode: 201,
       headers,

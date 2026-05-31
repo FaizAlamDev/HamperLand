@@ -12,6 +12,9 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as sns from "aws-cdk-lib/aws-sns";
+import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
+import * as sqs from "aws-cdk-lib/aws-sqs";
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -122,6 +125,11 @@ export class InfraStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    // SNS Topic
+    const orderCreatedTopic = new sns.Topic(this, "OrderCreatedTopic", {
+      displayName: "Order Created Events",
+    });
+
     // Lambda Function
     const createProductLambda = new lambda.Function(
       this,
@@ -179,6 +187,7 @@ export class InfraStack extends cdk.Stack {
       handler: "create-order.handler",
       environment: {
         TABLE_NAME: ordersTable.tableName,
+        ORDER_CREATED_TOPIC_ARN: orderCreatedTopic.topicArn,
       },
     });
 
@@ -218,6 +227,25 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
+    const emailDlq = new sqs.Queue(this, "EmailNotificationDLQ");
+
+    const emailNotificationLambda = new lambda.Function(
+      this,
+      "EmailNotificationHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        handler: "email-notification.handler",
+        code: lambda.Code.fromAsset("lambda"),
+
+        deadLetterQueue: emailDlq,
+        deadLetterQueueEnabled: true,
+        environment: {
+          FRONTEND_URL: `https://${frontendDistribution.distributionDomainName}`,
+          FROM_EMAIL: process.env.FROM_EMAIL!,
+        },
+      },
+    );
+
     // Permissions
     productsTable.grantWriteData(createProductLambda);
     productsTable.grantReadData(getProductsLambda);
@@ -232,6 +260,17 @@ export class InfraStack extends cdk.Stack {
     ordersTable.grantReadData(updateOrderLambda);
     ordersTable.grantWriteData(updateOrderLambda);
     ordersTable.grantReadData(getMyOrdersLambda);
+
+    orderCreatedTopic.grantPublish(createOrderLambda);
+    orderCreatedTopic.addSubscription(
+      new subscriptions.LambdaSubscription(emailNotificationLambda),
+    );
+    emailNotificationLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["ses:SendEmail"],
+        resources: ["*"],
+      }),
+    );
 
     // COGNITO USER POOL
     const userPool = new cognito.UserPool(this, "UserPool", {
