@@ -10,9 +10,13 @@ It supports product browsing, cart + checkout flow, authentication via Cognito (
 - Product listing and details
 - Cart and checkout flow
 - Order creation and success page
+- My Orders Page
+- User Profile Page
 - Admin product create, update and delete
 - Authentication via Cognito (Google + email/password)
 - Protected admin routes (`admin` group required)
+- Order confirmation emails for customers
+- Order notification emails for admin users
 - Automated CI/CD with GitHub Actions, AWS IAM Roles, and OIDC-based authentication
 
 ---
@@ -35,6 +39,9 @@ It supports product browsing, cart + checkout flow, authentication via Cognito (
 - API Gateway (Cognito authorizer)
 - Cognito (auth + groups)
 - DynamoDB (products, orders)
+- SNS (order events)
+- SES (email notifications)
+- SQS Dead Letter Queue (DLQ)
 - GitHub Actions (CI/CD)
 - AWS IAM
 - OpenID Connect (OIDC)
@@ -46,9 +53,13 @@ It supports product browsing, cart + checkout flow, authentication via Cognito (
 - Frontend is built with Vite and deployed to S3
 - CloudFront serves both frontend and product images
 - API Gateway routes requests to Lambda functions
-- Lambda functions handle products and orders
+- Lambda functions handle products, orders and notification workflows
 - DynamoDB stores product and order data
 - Cognito handles authentication and authorization
+- SNS publishes order events
+- Email notifications are sent via SES
+- Failed message processing is routed to an SQS Dead Letter Queue (DLQ)
+- GitHub Actions automates build and deployment workflows
 
 ---
 
@@ -72,6 +83,105 @@ VITE_COGNITO_AUTHORITY=
 ```env
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+FROM_EMAIL=
+USER_POOL_ID=
+```
+
+---
+
+## First-time AWS setup
+
+Before deploying the application for the first time, complete the following setup steps.
+
+### 1. Bootstrap CDK
+
+Bootstrap the target AWS account and region:
+
+```bash
+cd infra
+npx cdk bootstrap
+```
+
+This only needs to be done once per AWS account and region.
+
+### 2. Configure Google OAuth
+
+Create OAuth credentials in Google Cloud Console.
+
+Add the generated values to `infra/.env`:
+
+```env
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
+
+These credentials are used to configure Google as an identity provider for Cognito.
+
+### 3. Verify an SES Sender Identity
+
+Open AWS SES and verify an email address or domain that will be used to send emails.
+
+Example:
+
+```text
+noreply@example.com
+```
+
+Add the verified email address to the GitHub secret:
+
+```text
+FROM_EMAIL
+```
+
+Email notifications will fail if the sender identity is not verified.
+
+### 4. Configure GitHub OIDC
+
+Create an OIDC Identity Provider in AWS:
+
+```text
+Provider URL:
+https://token.actions.githubusercontent.com
+
+Audience:
+sts.amazonaws.com
+```
+
+Create an IAM Role that:
+
+- Trusts the GitHub OIDC provider
+- Can be assumed by this repository
+- Has permissions required for CDK deployment
+
+Typical permissions include:
+
+- CloudFormation
+- IAM
+- Lambda
+- API Gateway
+- Cognito
+- DynamoDB
+- S3
+- CloudFront
+- SNS
+- SQS
+- SES
+
+### 5. Configure GitHub Secrets
+
+Add the following repository secrets:
+
+```text
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+FROM_EMAIL
+USER_POOL_ID
+```
+
+### 6. Deploy
+
+```bash
+pnpm deploy
 ```
 
 ---
@@ -145,6 +255,8 @@ infra/
 - `/cart`
 - `/checkout`
 - `/order-success/:orderId`
+- `/my-orders`
+- `profile`
 - `/admin/createProduct` (protected)
 - `/admin/listProducts` (protected)
 - `/admin/orders` (protected)
@@ -154,6 +266,8 @@ infra/
 ## Access control
 
 - Authenticated users:
+  - View profile
+  - View their orders
   - Create orders
 
 - Admin users (Cognito group: `admin`):
