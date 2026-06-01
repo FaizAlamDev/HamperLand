@@ -311,6 +311,10 @@ export class InfraStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    // Grant Email Notification Lambda permissions to list Admin Group Users
+    emailNotificationLambda.addEnvironment("USER_POOL_ID", userPool.userPoolId);
+    userPool.grant(emailNotificationLambda, "cognito-idp:ListUsersInGroup");
+
     // GOOGLE IDENTITY PROVIDER
     const googleProvider = new cognito.UserPoolIdentityProviderGoogle(
       this,

@@ -75,11 +75,17 @@ exports.handler = async (event) => {
         TopicArn: process.env.ORDER_CREATED_TOPIC_ARN,
         Message: JSON.stringify({
           eventType: "ORDER_CREATED",
-          orderId,
-          customer,
-          totals: body.totals,
-          paymentMethod: body.paymentMethod,
-          createdAt: timestamp,
+          order: {
+            orderId,
+            customer,
+            items: body.items,
+            shippingAddress: body.shippingAddress,
+            totals: body.totals,
+            paymentMethod: body.paymentMethod,
+            paymentStatus: "PENDING",
+            orderStatus: "PLACED",
+            createdAt: timestamp,
+          },
         }),
       }),
     );
