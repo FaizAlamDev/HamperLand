@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from '@tanstack/react-router'
 import { AuthProvider, useAuth } from 'react-oidc-context'
+import { WebStorageStateStore } from 'oidc-client-ts'
 
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
 import { createAppRouter } from './router.ts'
@@ -17,6 +18,9 @@ const cognitoAuthConfig = {
   redirect_uri: window.location.origin,
   response_type: 'code',
   scope: 'email openid profile',
+  userStore: new WebStorageStateStore({
+    store: window.localStorage,
+  }),
   automaticSilentRenew: true,
   onSigninCallback: () => {
     window.history.replaceState({}, document.title, window.location.pathname)
