@@ -18,7 +18,7 @@ export type Product = {
 export type CartItem = Product & { qty: number }
 
 export type CartState = {
-  items: CartItem[]
+  items: Array<CartItem>
   addItem: (product: Product, qty?: number) => void
   removeItem: (id: string) => void
   updateQty: (id: string, qty: number) => void
@@ -71,7 +71,7 @@ export type Order = {
   orderId: string
   userId: string
   customer: Customer
-  items: OrderItem[]
+  items: Array<OrderItem>
   shippingAddress: ShippingAddress
 
   paymentMethod: PaymentMethod
@@ -86,9 +86,30 @@ export type Order = {
 }
 
 export type CreateOrderInput = {
-  items: OrderItem[]
+  items: Array<OrderItem>
   shippingAddress: ShippingAddress
   paymentMethod: PaymentMethod
+}
+
+export type RazorpayInfo = {
+  razorpayOrderId: string
+  keyId: string
+  amount: number
+  currency: string
+}
+
+export type RazorpayCheckoutResponse = {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+
+export type VerifyPaymentInput = RazorpayCheckoutResponse
+
+export type CreateOrderResponse = {
+  message: string
+  order: Order
+  razorpay?: RazorpayInfo
 }
 
 export const INDIAN_STATES = [

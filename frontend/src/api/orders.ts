@@ -1,11 +1,15 @@
-import type { CreateOrderInput } from '@/types'
+import type {
+  CreateOrderInput,
+  CreateOrderResponse,
+  VerifyPaymentInput,
+} from '@/types'
 
 const API_URL = import.meta.env.VITE_ORDERS_API_URL
 
 export const createOrder = async (
   orderPayload: CreateOrderInput,
   token: string,
-) => {
+): Promise<CreateOrderResponse> => {
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -53,6 +57,24 @@ export const getOrders = async (token: string) => {
   if (!response.ok) {
     throw new Error('Orders not found')
   }
+  return response.json()
+}
+
+export const verifyPayment = async (
+  orderId: string,
+  data: VerifyPaymentInput,
+  token: string,
+) => {
+  const response = await fetch(`${API_URL}/${orderId}/verify`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) throw new Error('Payment verification failed')
   return response.json()
 }
 

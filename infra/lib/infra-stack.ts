@@ -25,6 +25,9 @@ export class InfraStack extends cdk.Stack {
     const googleClientId = requiredEnv("GOOGLE_CLIENT_ID");
     const googleClientSecret = requiredEnv("GOOGLE_CLIENT_SECRET");
     const fromEmail = requiredEnv("FROM_EMAIL");
+    const razorpayKeyId = requiredEnv("RAZORPAY_KEY_ID");
+    const razorpayKeySecret = requiredEnv("RAZORPAY_KEY_SECRET");
+    const razorpayWebhookSecret = requiredEnv("RAZORPAY_WEBHOOK_SECRET");
 
     // S3 Bucket for Product Images
     const productImagesBucket = new s3.Bucket(this, "ProductImagesBucket", {
@@ -193,7 +196,10 @@ export class InfraStack extends cdk.Stack {
       handler: "create-order.handler",
       environment: {
         TABLE_NAME: ordersTable.tableName,
+        PRODUCTS_TABLE_NAME: productsTable.tableName,
         ORDER_CREATED_TOPIC_ARN: orderCreatedTopic.topicArn,
+        RAZORPAY_KEY_ID: razorpayKeyId,
+        RAZORPAY_KEY_SECRET: razorpayKeySecret,
       },
     });
 
@@ -233,6 +239,34 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
+    const verifyPaymentLambda = new lambda.Function(
+      this,
+      "VerifyPaymentHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        code: lambda.Code.fromAsset("lambda"),
+        handler: "verify-payment.handler",
+        environment: {
+          TABLE_NAME: ordersTable.tableName,
+          RAZORPAY_KEY_SECRET: razorpayKeySecret,
+        },
+      },
+    );
+
+    const razorpayWebhookLambda = new lambda.Function(
+      this,
+      "RazorpayWebhookHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        code: lambda.Code.fromAsset("lambda"),
+        handler: "razorpay-webhook.handler",
+        environment: {
+          TABLE_NAME: ordersTable.tableName,
+          RAZORPAY_WEBHOOK_SECRET: razorpayWebhookSecret,
+        },
+      },
+    );
+
     const emailDlq = new sqs.Queue(this, "EmailNotificationDLQ");
 
     const emailNotificationLambda = new lambda.Function(
@@ -263,9 +297,13 @@ export class InfraStack extends cdk.Stack {
     ordersTable.grantWriteData(createOrderLambda);
     ordersTable.grantReadData(getOrderLambda);
     ordersTable.grantReadData(getOrdersLambda);
+    ordersTable.grantReadWriteData(verifyPaymentLambda);
+    ordersTable.grantWriteData(razorpayWebhookLambda);
     ordersTable.grantReadData(updateOrderLambda);
     ordersTable.grantWriteData(updateOrderLambda);
     ordersTable.grantReadData(getMyOrdersLambda);
+
+    productsTable.grantReadData(createOrderLambda);
 
     orderCreatedTopic.grantPublish(createOrderLambda);
     orderCreatedTopic.addSubscription(
@@ -462,6 +500,23 @@ export class InfraStack extends cdk.Stack {
         authorizationType: apigateway.AuthorizationType.COGNITO,
       },
     );
+
+    singleOrderResource
+      .addResource("verify")
+      .addMethod(
+        "POST",
+        new apigateway.LambdaIntegration(verifyPaymentLambda),
+        {
+          authorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        },
+      );
+
+    // Public route — secured by Razorpay webhook signature verification
+    api.root
+      .addResource("payments")
+      .addResource("webhook")
+      .addMethod("POST", new apigateway.LambdaIntegration(razorpayWebhookLambda));
 
     const myOrdersResource = ordersResource.addResource("my");
     myOrdersResource.addMethod(
