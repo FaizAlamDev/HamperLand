@@ -116,8 +116,8 @@ export default function CheckoutForm({
             </div>
 
             <div className="flex items-center gap-3">
-              <RadioGroupItem value="UPI" id="pm-upi" />
-              <label htmlFor="pm-upi">UPI</label>
+              <RadioGroupItem value="ONLINE" id="pm-online" />
+              <label htmlFor="pm-online">Online (UPI / Card / Netbanking)</label>
             </div>
           </RadioGroup>
         </CardContent>

@@ -23,7 +23,7 @@ const ALLOWED_ORDER_STATUS = [
   "CANCELLED",
 ];
 
-const ALLOWED_PAYMENT_STATUS = ["PENDING", "PAID"];
+const ALLOWED_PAYMENT_STATUS = ["PENDING", "PAID", "FAILED"];
 
 const ORDER_STATUS_TRANSITIONS = {
   PLACED: ["CONFIRMED", "CANCELLED"],
@@ -34,8 +34,9 @@ const ORDER_STATUS_TRANSITIONS = {
 };
 
 const PAYMENT_STATUS_TRANSITIONS = {
-  PENDING: ["PAID"],
+  PENDING: ["PAID", "FAILED"],
   PAID: [],
+  FAILED: ["PAID"],
 };
 
 exports.handler = async (event) => {

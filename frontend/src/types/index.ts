@@ -34,9 +34,9 @@ export type OrderStatus =
   | 'DELIVERED'
   | 'CANCELLED'
 
-export type PaymentStatus = 'PENDING' | 'PAID'
+export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED'
 
-export type PaymentMethod = 'COD' | 'UPI'
+export type PaymentMethod = 'COD' | 'ONLINE'
 
 export type ShippingAddress = {
   name: string

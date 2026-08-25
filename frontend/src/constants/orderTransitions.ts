@@ -12,6 +12,7 @@ export const PAYMENT_STATUS_TRANSITIONS: Record<
   PaymentStatus,
   PaymentStatus[]
 > = {
-  PENDING: ['PAID'],
+  PENDING: ['PAID', 'FAILED'],
   PAID: [],
+  FAILED: ['PAID'],
 }
