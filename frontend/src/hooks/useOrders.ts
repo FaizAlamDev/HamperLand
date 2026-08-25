@@ -1,13 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from 'react-oidc-context'
+import type {
+  CreateOrderInput,
+  OrderStatus,
+  PaymentStatus,
+  VerifyPaymentInput,
+} from '@/types'
 import {
   createOrder,
   getMyOrders,
   getOrder,
   getOrders,
   updateOrder,
+  verifyPayment,
 } from '@/api/orders'
-import type { CreateOrderInput, OrderStatus, PaymentStatus } from '@/types'
-import { useAuth } from 'react-oidc-context'
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -94,6 +100,41 @@ export const useOrders = () => {
         throw new Error('User not authenticated')
       }
       return getOrders(token)
+    },
+  })
+}
+
+export const useVerifyPayment = () => {
+  const auth = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      orderId,
+      data,
+    }: {
+      orderId: string
+      data: VerifyPaymentInput
+    }) => {
+      const token = auth.user?.id_token
+      if (!token) {
+        throw new Error('User not authenticated')
+      }
+      return verifyPayment(orderId, data, token)
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: orderKeys.detail(variables.orderId),
+      })
+      queryClient.invalidateQueries({
+        queryKey: orderKeys.my,
+      })
+      queryClient.invalidateQueries({
+        queryKey: orderKeys.all,
+      })
+    },
+    onError: (error) => {
+      console.error('Error verifying payment:', error)
     },
   })
 }
