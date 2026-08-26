@@ -86,6 +86,13 @@ export const useMyOrders = () => {
       return getMyOrders(token)
     },
     enabled: !!auth.user,
+    select: (data: { orders: import('@/types').Order[] }) => ({
+      ...data,
+      orders: [...data.orders].sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      ),
+    }),
   })
 }
 

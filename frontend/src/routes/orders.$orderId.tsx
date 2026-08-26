@@ -1,3 +1,5 @@
+import { ArrowLeft } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import OrderProgress from '@/components/OrderProgress'
 import OrderStatusBadge from '@/components/OrderStatusBadge'
 import PaymentStatusBadge from '@/components/PaymentStatusBadge'
@@ -25,8 +27,31 @@ function OrderDetailsPage() {
     return <div className="p-6">Loading...</div>
   }
 
+  if (!data) {
+    return (
+      <div className="mx-auto max-w-4xl space-y-6 p-6">
+        <Link
+          to="/my-orders"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to My Orders
+        </Link>
+        <div className="p-6">Order not found</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <Link
+        to="/my-orders"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to My Orders
+      </Link>
+
       <div>
         <h1 className="text-2xl font-semibold">Order #{data.orderId}</h1>
 

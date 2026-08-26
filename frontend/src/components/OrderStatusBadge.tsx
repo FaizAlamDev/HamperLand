@@ -1,7 +1,7 @@
 import type { OrderStatus } from '@/types'
 
 const styles: Record<OrderStatus, string> = {
-  PLACED: 'bg-gray-100 text-gray-700',
+  PLACED: 'bg-amber-100 text-amber-700',
   CONFIRMED: 'bg-blue-100 text-blue-700',
   SHIPPED: 'bg-amber-100 text-amber-700',
   DELIVERED: 'bg-green-100 text-green-700',

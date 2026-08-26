@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useOrder } from '@/hooks/useOrders'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import OrderStatusBadge from '@/components/OrderStatusBadge'
 
 export const Route = createFileRoute('/order-success/$orderId')({
   component: OrderSuccessRoute,
@@ -47,9 +48,7 @@ function OrderSuccessRoute() {
             placed.
           </p>
 
-          <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-            {order.orderStatus}
-          </div>
+          <OrderStatusBadge status={order.orderStatus} />
 
           <div className="rounded border bg-card p-4">
             <div className="mb-2 text-sm text-muted-foreground">Shipping</div>
@@ -104,6 +103,9 @@ function OrderSuccessRoute() {
             <div className="flex gap-2">
               <Link to="/">
                 <Button>Continue Shopping</Button>
+              </Link>
+              <Link to="/my-orders">
+                <Button variant="outline">View My Orders</Button>
               </Link>
             </div>
           </div>
